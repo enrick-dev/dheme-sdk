@@ -1,0 +1,61 @@
+{
+  "name": "@dheme/sdk",
+  "version": "1.0.0",
+  "description": "TypeScript SDK for Dheme Theme Generator API",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "dheme",
+    "theme",
+    "generator",
+    "shadcn",
+    "tailwind",
+    "sdk",
+    "typescript",
+    "api-client"
+  ],
+  "author": "Dheme Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dheme/sdk"
+  },
+  "homepage": "https://dheme.com",
+  "bugs": {
+    "url": "https://github.com/dheme/sdk/issues"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0",
+    "eslint": "^8.56.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
