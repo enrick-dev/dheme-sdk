@@ -23,10 +23,7 @@ import type {
 import { validateApiKey, validateGenerateThemeRequest } from './utils/validators';
 import { makeRequest, parseRateLimitHeaders } from './utils/request';
 import { withRetry } from './middleware/retry';
-import {
-  applyRequestInterceptors,
-  applyResponseInterceptors,
-} from './middleware/interceptors';
+import { applyRequestInterceptors, applyResponseInterceptors } from './middleware/interceptors';
 
 /**
  * Cliente principal da SDK Dheme
@@ -67,11 +64,7 @@ export class DhemeClient {
   ): Promise<ResponseWithRateLimit<GenerateThemeResponse>> {
     validateGenerateThemeRequest(params);
 
-    return this.makeApiRequest<GenerateThemeResponse>(
-      'POST',
-      '/api/generate-theme',
-      params
-    );
+    return this.makeApiRequest<GenerateThemeResponse>('POST', '/api/generate-theme', params);
   }
 
   /**
@@ -80,11 +73,7 @@ export class DhemeClient {
   async generateShadcnCSS(params: GenerateThemeRequest): Promise<string> {
     validateGenerateThemeRequest(params);
 
-    const response = await this.makeRawRequest(
-      'POST',
-      '/api/generate-theme/shadcn',
-      params
-    );
+    const response = await this.makeRawRequest('POST', '/api/generate-theme/shadcn', params);
 
     return response.text();
   }
@@ -97,11 +86,7 @@ export class DhemeClient {
   ): Promise<ResponseWithRateLimit<TokensResponse>> {
     validateGenerateThemeRequest(params);
 
-    return this.makeApiRequest<TokensResponse>(
-      'POST',
-      '/api/generate-theme/tokens',
-      params
-    );
+    return this.makeApiRequest<TokensResponse>('POST', '/api/generate-theme/tokens', params);
   }
 
   /**
@@ -119,27 +104,24 @@ export class DhemeClient {
     endpoint: string,
     body?: unknown
   ): Promise<ResponseWithRateLimit<T>> {
-    return withRetry(
-      async () => {
-        const response = await this.makeRawRequest(method, endpoint, body);
+    return withRetry(async () => {
+      const response = await this.makeRawRequest(method, endpoint, body);
 
-        // Parse JSON
-        const data = await response.json();
+      // Parse JSON
+      const data = await response.json();
 
-        // Parse rate limit headers
-        const rateLimit = parseRateLimitHeaders(response.headers);
+      // Parse rate limit headers
+      const rateLimit = parseRateLimitHeaders(response.headers);
 
-        return {
-          data: data as T,
-          rateLimit: rateLimit || {
-            limit: 0,
-            remaining: 0,
-            reset: new Date().toISOString(),
-          },
-        };
-      },
-      this.config.retryConfig
-    );
+      return {
+        data: data as T,
+        rateLimit: rateLimit || {
+          limit: 0,
+          remaining: 0,
+          reset: new Date().toISOString(),
+        },
+      };
+    }, this.config.retryConfig);
   }
 
   /**
@@ -178,10 +160,7 @@ export class DhemeClient {
     let response = await makeRequest(requestConfig);
 
     // Aplicar interceptors de response
-    response = await applyResponseInterceptors(
-      response,
-      this.config.interceptors?.response
-    );
+    response = await applyResponseInterceptors(response, this.config.interceptors?.response);
 
     // Handle errors
     if (!response.ok) {
@@ -195,15 +174,15 @@ export class DhemeClient {
    * Handle error responses
    */
   private async handleErrorResponse(response: Response): Promise<never> {
-    let errorData: any;
+    let errorData: Record<string, unknown>;
 
     try {
-      errorData = await response.json();
+      errorData = (await response.json()) as Record<string, unknown>;
     } catch {
       errorData = { error: response.statusText };
     }
 
-    const message = errorData.error || 'Unknown error';
+    const message = (errorData.error as string) || 'Unknown error';
 
     switch (response.status) {
       case 400:
@@ -215,9 +194,9 @@ export class DhemeClient {
       case 429:
         throw new RateLimitError(
           message,
-          errorData.limit || 0,
-          errorData.resetAt || new Date().toISOString(),
-          errorData.plan || 'unknown',
+          (errorData.limit as number) || 0,
+          (errorData.resetAt as string) || new Date().toISOString(),
+          (errorData.plan as string) || 'unknown',
           errorData
         );
 
@@ -232,4 +211,3 @@ export class DhemeClient {
     }
   }
 }
-

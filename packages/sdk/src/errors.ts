@@ -60,7 +60,10 @@ export class RateLimitError extends DhemeError {
  * Erro de rede/timeout
  */
 export class NetworkError extends DhemeError {
-  constructor(message: string, public readonly cause?: Error) {
+  constructor(
+    message: string,
+    public readonly cause?: Error
+  ) {
     super(message);
     this.name = 'NetworkError';
     Object.setPrototypeOf(this, NetworkError.prototype);
@@ -77,4 +80,3 @@ export class ServerError extends DhemeError {
     Object.setPrototypeOf(this, ServerError.prototype);
   }
 }
-

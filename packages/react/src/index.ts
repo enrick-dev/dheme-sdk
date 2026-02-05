@@ -9,10 +9,7 @@ export { useTheme } from './hooks/useTheme';
 export { useGenerateTheme } from './hooks/useGenerateTheme';
 
 // Utilitários
-export {
-  applyThemeCSSVariables,
-  removeThemeCSSVariables,
-} from './utils/cssVariables';
+export { applyThemeCSSVariables, removeThemeCSSVariables } from './utils/cssVariables';
 export {
   saveThemeToStorage,
   loadThemeFromStorage,
@@ -26,4 +23,3 @@ export type {
   ColorTokens,
   HSLColor,
 } from '@dheme/sdk';
-

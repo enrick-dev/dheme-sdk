@@ -42,13 +42,9 @@ export interface Interceptors {
   response?: ResponseInterceptor[];
 }
 
-export type RequestInterceptor = (
-  config: RequestConfig
-) => RequestConfig | Promise<RequestConfig>;
+export type RequestInterceptor = (config: RequestConfig) => RequestConfig | Promise<RequestConfig>;
 
-export type ResponseInterceptor = (
-  response: Response
-) => Response | Promise<Response>;
+export type ResponseInterceptor = (response: Response) => Response | Promise<Response>;
 
 /**
  * Configuração interna de request
@@ -204,4 +200,3 @@ export interface ResponseWithRateLimit<T> {
   data: T;
   rateLimit: RateLimitHeaders;
 }
-

@@ -131,4 +131,3 @@ export function formatHSLString(hsl: HSLColor): string {
 export function isValidHex(hex: string): boolean {
   return /^#?[0-9A-Fa-f]{6}$/.test(hex);
 }
-

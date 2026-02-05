@@ -6,9 +6,7 @@ import type { RequestConfig, RateLimitHeaders } from '../types';
  */
 export function isNode(): boolean {
   return (
-    typeof process !== 'undefined' &&
-    process.versions != null &&
-    process.versions.node != null
+    typeof process !== 'undefined' && process.versions != null && process.versions.node != null
   );
 }
 
@@ -64,4 +62,3 @@ export function parseRateLimitHeaders(headers: Headers): RateLimitHeaders | null
     reset,
   };
 }
-

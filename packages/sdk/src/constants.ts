@@ -25,4 +25,3 @@ export const DEFAULT_HEADERS = {
   'Content-Type': 'application/json',
   'User-Agent': 'dheme-sdk/1.0.0',
 };
-

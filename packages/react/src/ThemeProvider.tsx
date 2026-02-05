@@ -1,9 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import {
-  DhemeClient,
-  type GenerateThemeRequest,
-  type GenerateThemeResponse,
-} from '@dheme/sdk';
+import { DhemeClient, type GenerateThemeRequest, type GenerateThemeResponse } from '@dheme/sdk';
 import { ThemeContext } from './ThemeContext';
 import { applyThemeCSSVariables } from './utils/cssVariables';
 import { loadThemeFromStorage, saveThemeToStorage } from './utils/localStorage';
@@ -35,10 +31,7 @@ export function ThemeProvider({
   onThemeChange,
 }: ThemeProviderProps) {
   // Cliente SDK
-  const client = useMemo(
-    () => new DhemeClient({ apiKey, baseUrl }),
-    [apiKey, baseUrl]
-  );
+  const client = useMemo(() => new DhemeClient({ apiKey, baseUrl }), [apiKey, baseUrl]);
 
   // Estado
   const [theme, setTheme] = useState<GenerateThemeResponse | null>(null);
@@ -126,4 +119,3 @@ export function ThemeProvider({
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
-

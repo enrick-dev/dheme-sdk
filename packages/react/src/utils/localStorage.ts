@@ -45,4 +45,3 @@ export function removeThemeFromStorage(): void {
     console.warn('[Dheme] Failed to remove theme from localStorage:', error);
   }
 }
-

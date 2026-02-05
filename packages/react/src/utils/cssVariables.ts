@@ -4,10 +4,7 @@ import { formatHSLString } from '@dheme/sdk';
 /**
  * Aplica CSS variables do tema no document root
  */
-export function applyThemeCSSVariables(
-  theme: GenerateThemeResponse,
-  mode: 'light' | 'dark'
-): void {
+export function applyThemeCSSVariables(theme: GenerateThemeResponse, mode: 'light' | 'dark'): void {
   if (typeof document === 'undefined') return;
 
   const root = document.documentElement;
@@ -19,29 +16,17 @@ export function applyThemeCSSVariables(
   root.style.setProperty('--card', formatHSLString(colors.card));
   root.style.setProperty('--card-foreground', formatHSLString(colors.cardForeground));
   root.style.setProperty('--popover', formatHSLString(colors.popover));
-  root.style.setProperty(
-    '--popover-foreground',
-    formatHSLString(colors.popoverForeground)
-  );
+  root.style.setProperty('--popover-foreground', formatHSLString(colors.popoverForeground));
   root.style.setProperty('--primary', formatHSLString(colors.primary));
-  root.style.setProperty(
-    '--primary-foreground',
-    formatHSLString(colors.primaryForeground)
-  );
+  root.style.setProperty('--primary-foreground', formatHSLString(colors.primaryForeground));
   root.style.setProperty('--secondary', formatHSLString(colors.secondary));
-  root.style.setProperty(
-    '--secondary-foreground',
-    formatHSLString(colors.secondaryForeground)
-  );
+  root.style.setProperty('--secondary-foreground', formatHSLString(colors.secondaryForeground));
   root.style.setProperty('--muted', formatHSLString(colors.muted));
   root.style.setProperty('--muted-foreground', formatHSLString(colors.mutedForeground));
   root.style.setProperty('--accent', formatHSLString(colors.accent));
   root.style.setProperty('--accent-foreground', formatHSLString(colors.accentForeground));
   root.style.setProperty('--destructive', formatHSLString(colors.destructive));
-  root.style.setProperty(
-    '--destructive-foreground',
-    formatHSLString(colors.destructiveForeground)
-  );
+  root.style.setProperty('--destructive-foreground', formatHSLString(colors.destructiveForeground));
   root.style.setProperty('--border', formatHSLString(colors.border));
   root.style.setProperty('--input', formatHSLString(colors.input));
   root.style.setProperty('--ring', formatHSLString(colors.ring));
@@ -90,4 +75,3 @@ export function removeThemeCSSVariables(): void {
 
   variables.forEach((v) => root.style.removeProperty(v));
 }
-

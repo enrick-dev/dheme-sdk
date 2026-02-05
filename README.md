@@ -108,6 +108,7 @@ x-api-key: dheme_xxxxxxxx_[resto-da-chave]
 ```
 
 **Formato da API Key:**
+
 - Prefixo: `dheme_`
 - 8 caracteres alfanuméricos (identificador)
 - Underscore `_`
@@ -134,12 +135,14 @@ Quando o limite é excedido, retorna **429 Too Many Requests**.
 Gera um tema completo com todos os tokens de cor (light e dark mode).
 
 **Request Headers:**
+
 ```http
 Content-Type: application/json
 x-api-key: dheme_xxxxxxxx_...
 ```
 
 **Request Body:**
+
 ```typescript
 {
   "theme": "#3b82f6",              // Cor primária (HEX obrigatório)
@@ -154,6 +157,7 @@ x-api-key: dheme_xxxxxxxx_...
 ```
 
 **Response 200 OK:**
+
 ```typescript
 {
   "theme": "#3b82f6",
@@ -206,6 +210,7 @@ x-api-key: dheme_xxxxxxxx_...
 ```
 
 **Response 400 Bad Request:**
+
 ```json
 {
   "error": "Invalid theme color"
@@ -213,6 +218,7 @@ x-api-key: dheme_xxxxxxxx_...
 ```
 
 **Response 401 Unauthorized:**
+
 ```json
 {
   "error": "Missing API key. Provide it in the x-api-key header."
@@ -220,6 +226,7 @@ x-api-key: dheme_xxxxxxxx_...
 ```
 
 **Response 429 Too Many Requests:**
+
 ```json
 {
   "error": "Rate limit exceeded. Upgrade your plan or wait until the next billing cycle.",
@@ -238,6 +245,7 @@ Retorna CSS pronto para uso com variáveis CSS do Shadcn/ui.
 **Request:** Idêntico ao endpoint `/api/generate-theme`
 
 **Response 200 OK:**
+
 ```css
 Content-Type: text/css
 
@@ -296,6 +304,7 @@ Retorna tokens com múltiplos formatos de cor (HSL, RGB, HEX).
 **Request:** Idêntico ao endpoint `/api/generate-theme`
 
 **Response 200 OK:**
+
 ```typescript
 {
   "light": {
@@ -339,11 +348,13 @@ Retorna tokens com múltiplos formatos de cor (HSL, RGB, HEX).
 Retorna estatísticas de uso da API key.
 
 **Request Headers:**
+
 ```http
 x-api-key: dheme_xxxxxxxx_...
 ```
 
 **Response 200 OK:**
+
 ```json
 {
   "usage": 847,
@@ -370,9 +381,7 @@ Criar arquivo `/package.json`:
   "name": "dheme-sdk-monorepo",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "build": "npm run build --workspaces",
     "dev": "npm run dev --workspaces",
@@ -466,11 +475,7 @@ Criar arquivo `/packages/sdk/package.json`:
       "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
@@ -583,13 +588,9 @@ export interface Interceptors {
   response?: ResponseInterceptor[];
 }
 
-export type RequestInterceptor = (
-  config: RequestConfig
-) => RequestConfig | Promise<RequestConfig>;
+export type RequestInterceptor = (config: RequestConfig) => RequestConfig | Promise<RequestConfig>;
 
-export type ResponseInterceptor = (
-  response: Response
-) => Response | Promise<Response>;
+export type ResponseInterceptor = (response: Response) => Response | Promise<Response>;
 
 /**
  * Configuração interna de request
@@ -816,7 +817,10 @@ export class RateLimitError extends DhemeError {
  * Erro de rede/timeout
  */
 export class NetworkError extends DhemeError {
-  constructor(message: string, public readonly cause?: Error) {
+  constructor(
+    message: string,
+    public readonly cause?: Error
+  ) {
     super(message);
     this.name = 'NetworkError';
     Object.setPrototypeOf(this, NetworkError.prototype);
@@ -1093,9 +1097,7 @@ export function validateApiKey(apiKey: string): void {
   const format = /^dheme_[a-zA-Z0-9]{8}_[a-zA-Z0-9_-]+$/;
 
   if (!format.test(apiKey)) {
-    throw new ValidationError(
-      'Invalid API key format. Expected: dheme_xxxxxxxx_...'
-    );
+    throw new ValidationError('Invalid API key format. Expected: dheme_xxxxxxxx_...');
   }
 }
 ```
@@ -1115,9 +1117,7 @@ import type { RequestConfig, RateLimitHeaders } from '../types';
  */
 export function isNode(): boolean {
   return (
-    typeof process !== 'undefined' &&
-    process.versions != null &&
-    process.versions.node != null
+    typeof process !== 'undefined' && process.versions != null && process.versions.node != null
   );
 }
 
@@ -1192,13 +1192,10 @@ export async function withRetry<T>(
   fn: () => Promise<T>,
   config: Partial<RetryConfig> = {}
 ): Promise<T> {
-  const {
-    maxRetries,
-    initialDelay,
-    maxDelay,
-    backoffMultiplier,
-    retryableStatusCodes,
-  } = { ...DEFAULT_RETRY_CONFIG, ...config };
+  const { maxRetries, initialDelay, maxDelay, backoffMultiplier, retryableStatusCodes } = {
+    ...DEFAULT_RETRY_CONFIG,
+    ...config,
+  };
 
   let lastError: Error | undefined;
   let delay = initialDelay;
@@ -1300,9 +1297,7 @@ export const loggingInterceptor: RequestInterceptor = (config) => {
 /**
  * Interceptor de custom headers (exemplo)
  */
-export function customHeadersInterceptor(
-  headers: Record<string, string>
-): RequestInterceptor {
+export function customHeadersInterceptor(headers: Record<string, string>): RequestInterceptor {
   return (config) => ({
     ...config,
     headers: { ...config.headers, ...headers },
@@ -1351,10 +1346,7 @@ import type {
 import { validateApiKey, validateGenerateThemeRequest } from './utils/validators';
 import { makeRequest, parseRateLimitHeaders } from './utils/request';
 import { withRetry } from './middleware/retry';
-import {
-  applyRequestInterceptors,
-  applyResponseInterceptors,
-} from './middleware/interceptors';
+import { applyRequestInterceptors, applyResponseInterceptors } from './middleware/interceptors';
 
 /**
  * Cliente principal da SDK Dheme
@@ -1395,11 +1387,7 @@ export class DhemeClient {
   ): Promise<ResponseWithRateLimit<GenerateThemeResponse>> {
     validateGenerateThemeRequest(params);
 
-    return this.makeApiRequest<GenerateThemeResponse>(
-      'POST',
-      '/api/generate-theme',
-      params
-    );
+    return this.makeApiRequest<GenerateThemeResponse>('POST', '/api/generate-theme', params);
   }
 
   /**
@@ -1408,11 +1396,7 @@ export class DhemeClient {
   async generateShadcnCSS(params: GenerateThemeRequest): Promise<string> {
     validateGenerateThemeRequest(params);
 
-    const response = await this.makeRawRequest(
-      'POST',
-      '/api/generate-theme/shadcn',
-      params
-    );
+    const response = await this.makeRawRequest('POST', '/api/generate-theme/shadcn', params);
 
     return response.text();
   }
@@ -1425,11 +1409,7 @@ export class DhemeClient {
   ): Promise<ResponseWithRateLimit<TokensResponse>> {
     validateGenerateThemeRequest(params);
 
-    return this.makeApiRequest<TokensResponse>(
-      'POST',
-      '/api/generate-theme/tokens',
-      params
-    );
+    return this.makeApiRequest<TokensResponse>('POST', '/api/generate-theme/tokens', params);
   }
 
   /**
@@ -1447,27 +1427,24 @@ export class DhemeClient {
     endpoint: string,
     body?: unknown
   ): Promise<ResponseWithRateLimit<T>> {
-    return withRetry(
-      async () => {
-        const response = await this.makeRawRequest(method, endpoint, body);
+    return withRetry(async () => {
+      const response = await this.makeRawRequest(method, endpoint, body);
 
-        // Parse JSON
-        const data = await response.json();
+      // Parse JSON
+      const data = await response.json();
 
-        // Parse rate limit headers
-        const rateLimit = parseRateLimitHeaders(response.headers);
+      // Parse rate limit headers
+      const rateLimit = parseRateLimitHeaders(response.headers);
 
-        return {
-          data: data as T,
-          rateLimit: rateLimit || {
-            limit: 0,
-            remaining: 0,
-            reset: new Date().toISOString(),
-          },
-        };
-      },
-      this.config.retryConfig
-    );
+      return {
+        data: data as T,
+        rateLimit: rateLimit || {
+          limit: 0,
+          remaining: 0,
+          reset: new Date().toISOString(),
+        },
+      };
+    }, this.config.retryConfig);
   }
 
   /**
@@ -1506,10 +1483,7 @@ export class DhemeClient {
     let response = await makeRequest(requestConfig);
 
     // Aplicar interceptors de response
-    response = await applyResponseInterceptors(
-      response,
-      this.config.interceptors?.response
-    );
+    response = await applyResponseInterceptors(response, this.config.interceptors?.response);
 
     // Handle errors
     if (!response.ok) {
@@ -1644,11 +1618,7 @@ Criar arquivo `/packages/react/package.json`:
       "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean --external react --external react-dom",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch --external react --external react-dom",
@@ -1658,14 +1628,7 @@ Criar arquivo `/packages/react/package.json`:
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
-  "keywords": [
-    "dheme",
-    "theme",
-    "react",
-    "hooks",
-    "shadcn",
-    "tailwind"
-  ],
+  "keywords": ["dheme", "theme", "react", "hooks", "shadcn", "tailwind"],
   "author": "Dheme Team",
   "license": "MIT",
   "repository": {
@@ -1701,11 +1664,7 @@ Criar arquivo `/packages/react/src/ThemeContext.tsx`:
 
 ```typescript
 import { createContext } from 'react';
-import type {
-  GenerateThemeResponse,
-  DhemeClient,
-  GenerateThemeRequest,
-} from '@dheme/sdk';
+import type { GenerateThemeResponse, DhemeClient, GenerateThemeRequest } from '@dheme/sdk';
 
 export interface ThemeContextValue {
   client: DhemeClient;
@@ -1733,10 +1692,7 @@ import { formatHSLString } from '@dheme/sdk';
 /**
  * Aplica CSS variables do tema no document root
  */
-export function applyThemeCSSVariables(
-  theme: GenerateThemeResponse,
-  mode: 'light' | 'dark'
-): void {
+export function applyThemeCSSVariables(theme: GenerateThemeResponse, mode: 'light' | 'dark'): void {
   if (typeof document === 'undefined') return;
 
   const root = document.documentElement;
@@ -1748,29 +1704,17 @@ export function applyThemeCSSVariables(
   root.style.setProperty('--card', formatHSLString(colors.card));
   root.style.setProperty('--card-foreground', formatHSLString(colors.cardForeground));
   root.style.setProperty('--popover', formatHSLString(colors.popover));
-  root.style.setProperty(
-    '--popover-foreground',
-    formatHSLString(colors.popoverForeground)
-  );
+  root.style.setProperty('--popover-foreground', formatHSLString(colors.popoverForeground));
   root.style.setProperty('--primary', formatHSLString(colors.primary));
-  root.style.setProperty(
-    '--primary-foreground',
-    formatHSLString(colors.primaryForeground)
-  );
+  root.style.setProperty('--primary-foreground', formatHSLString(colors.primaryForeground));
   root.style.setProperty('--secondary', formatHSLString(colors.secondary));
-  root.style.setProperty(
-    '--secondary-foreground',
-    formatHSLString(colors.secondaryForeground)
-  );
+  root.style.setProperty('--secondary-foreground', formatHSLString(colors.secondaryForeground));
   root.style.setProperty('--muted', formatHSLString(colors.muted));
   root.style.setProperty('--muted-foreground', formatHSLString(colors.mutedForeground));
   root.style.setProperty('--accent', formatHSLString(colors.accent));
   root.style.setProperty('--accent-foreground', formatHSLString(colors.accentForeground));
   root.style.setProperty('--destructive', formatHSLString(colors.destructive));
-  root.style.setProperty(
-    '--destructive-foreground',
-    formatHSLString(colors.destructiveForeground)
-  );
+  root.style.setProperty('--destructive-foreground', formatHSLString(colors.destructiveForeground));
   root.style.setProperty('--border', formatHSLString(colors.border));
   root.style.setProperty('--input', formatHSLString(colors.input));
   root.style.setProperty('--ring', formatHSLString(colors.ring));
@@ -2101,10 +2045,7 @@ export { useTheme } from './hooks/useTheme';
 export { useGenerateTheme } from './hooks/useGenerateTheme';
 
 // Utilitários
-export {
-  applyThemeCSSVariables,
-  removeThemeCSSVariables,
-} from './utils/cssVariables';
+export { applyThemeCSSVariables, removeThemeCSSVariables } from './utils/cssVariables';
 export {
   saveThemeToStorage,
   loadThemeFromStorage,

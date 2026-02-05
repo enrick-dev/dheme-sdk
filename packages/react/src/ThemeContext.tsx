@@ -1,9 +1,5 @@
 import { createContext } from 'react';
-import type {
-  GenerateThemeResponse,
-  DhemeClient,
-  GenerateThemeRequest,
-} from '@dheme/sdk';
+import type { GenerateThemeResponse, DhemeClient, GenerateThemeRequest } from '@dheme/sdk';
 
 export interface ThemeContextValue {
   client: DhemeClient;
@@ -16,4 +12,3 @@ export interface ThemeContextValue {
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
-

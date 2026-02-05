@@ -8,13 +8,10 @@ export async function withRetry<T>(
   fn: () => Promise<T>,
   config: Partial<RetryConfig> = {}
 ): Promise<T> {
-  const {
-    maxRetries,
-    initialDelay,
-    maxDelay,
-    backoffMultiplier,
-    retryableStatusCodes,
-  } = { ...DEFAULT_RETRY_CONFIG, ...config };
+  const { maxRetries, initialDelay, maxDelay, backoffMultiplier, retryableStatusCodes } = {
+    ...DEFAULT_RETRY_CONFIG,
+    ...config,
+  };
 
   let lastError: Error | undefined;
   let delay = initialDelay;
@@ -54,4 +51,3 @@ export async function withRetry<T>(
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-

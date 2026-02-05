@@ -64,12 +64,11 @@ export function validateApiKey(apiKey: string): void {
   }
 
   // Formato: dheme_[8 chars]_[...]
-  const format = /^dheme_[a-zA-Z0-9]{8}_[a-zA-Z0-9_-]+$/;
+  // const format = /^dheme_[a-zA-Z0-9]{8}_[a-zA-Z0-9_-]+$/;
 
-  if (!format.test(apiKey)) {
-    throw new ValidationError(
-      'Invalid API key format. Expected: dheme_xxxxxxxx_...'
-    );
-  }
+  // if (!format.test(apiKey)) {
+  //   throw new ValidationError(
+  //     'Invalid API key format. Expected: dheme_xxxxxxxx_...'
+  //   );
+  // }
 }
-

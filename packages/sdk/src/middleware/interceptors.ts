@@ -51,9 +51,7 @@ export const loggingInterceptor: RequestInterceptor = (config) => {
 /**
  * Interceptor de custom headers (exemplo)
  */
-export function customHeadersInterceptor(
-  headers: Record<string, string>
-): RequestInterceptor {
+export function customHeadersInterceptor(headers: Record<string, string>): RequestInterceptor {
   return (config) => ({
     ...config,
     headers: { ...config.headers, ...headers },
@@ -67,4 +65,3 @@ export const responseLoggingInterceptor: ResponseInterceptor = (response) => {
   console.log('[Dheme SDK Response]', response.status, response.statusText);
   return response;
 };
-

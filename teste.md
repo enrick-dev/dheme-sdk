@@ -146,6 +146,7 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
 4. **Implementação Detalhada da SDK Base**
 
    **package.json:**
+
    ```json
    {
      "name": "@dheme/sdk",
@@ -198,20 +199,21 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
    - ServerError (500)
 
    **Cliente Principal (client.ts):**
+
    ```typescript
    class DhemeClient {
-     constructor(config: DhemeClientConfig)
+     constructor(config: DhemeClientConfig);
 
      // Métodos públicos
-     generateTheme(params): Promise<ResponseWithRateLimit<GenerateThemeResponse>>
-     generateShadcnCSS(params): Promise<string>
-     generateTokens(params): Promise<ResponseWithRateLimit<TokensResponse>>
-     getUsage(): Promise<ResponseWithRateLimit<UsageResponse>>
+     generateTheme(params): Promise<ResponseWithRateLimit<GenerateThemeResponse>>;
+     generateShadcnCSS(params): Promise<string>;
+     generateTokens(params): Promise<ResponseWithRateLimit<TokensResponse>>;
+     getUsage(): Promise<ResponseWithRateLimit<UsageResponse>>;
 
      // Métodos privados
-     private makeApiRequest<T>()
-     private makeRawRequest()
-     private handleErrorResponse()
+     private makeApiRequest<T>();
+     private makeRawRequest();
+     private handleErrorResponse();
    }
    ```
 
@@ -257,6 +259,7 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
 6. **Implementação Detalhada da React Library**
 
    **package.json:**
+
    ```json
    {
      "name": "@dheme/react",
@@ -273,6 +276,7 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
    ```
 
    **ThemeContext (ThemeContext.tsx):**
+
    ```typescript
    interface ThemeContextValue {
      client: DhemeClient;
@@ -320,6 +324,7 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
 7. **Exemplos de Uso**
 
    **SDK Base - Básico:**
+
    ```typescript
    import { DhemeClient } from '@dheme/sdk';
 
@@ -334,6 +339,7 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
    ```
 
    **SDK Base - Com Retry:**
+
    ```typescript
    const client = new DhemeClient({
      apiKey: 'dheme_xxxxxxxx_...',
@@ -345,6 +351,7 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
    ```
 
    **SDK Base - Com Interceptors:**
+
    ```typescript
    const client = new DhemeClient({
      apiKey: 'dheme_xxxxxxxx_...',
@@ -356,6 +363,7 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
    ```
 
    **React - Básico:**
+
    ```typescript
    import { ThemeProvider, useGenerateTheme, useTheme } from '@dheme/react';
 
@@ -380,6 +388,7 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
    ```
 
    **React - Com Persistência:**
+
    ```typescript
    <ThemeProvider
      apiKey="dheme_xxxxxxxx_..."
@@ -392,6 +401,7 @@ Este README é a **fonte única de verdade** - será usado pela IA para implemen
    ```
 
    **React - Next.js:**
+
    ```typescript
    // app/layout.tsx
    import { ThemeProvider } from '@dheme/react';
@@ -472,6 +482,7 @@ Os seguintes arquivos do projeto atual devem ser lidos para entender a API:
 ### SDK Base
 
 **Cliente HTTP Universal:**
+
 - Detecta ambiente (Browser/Node/Edge)
 - Usa fetch API nativa
 - Polyfill para Node.js < 18
@@ -479,6 +490,7 @@ Os seguintes arquivos do projeto atual devem ser lidos para entender a API:
 - AbortController para cancelamento
 
 **Sistema de Retry:**
+
 - Backoff exponencial
 - Configura delay inicial, máximo, multiplicador
 - Status codes retryable configuráveis
@@ -486,6 +498,7 @@ Os seguintes arquivos do projeto atual devem ser lidos para entender a API:
 - Preserva último erro
 
 **Interceptors:**
+
 - Request interceptors (modificar config antes de enviar)
 - Response interceptors (modificar response antes de retornar)
 - Chain de interceptors
@@ -493,6 +506,7 @@ Os seguintes arquivos do projeto atual devem ser lidos para entender a API:
 - Exemplos: logging, custom headers, auth
 
 **Error Handling:**
+
 - Classes de erro tipadas
 - Preserva response original
 - Status code no erro
@@ -500,17 +514,20 @@ Os seguintes arquivos do projeto atual devem ser lidos para entender a API:
 - Network vs Server vs Validation errors
 
 **Rate Limit Awareness:**
+
 - Parse headers automático
 - Retorna com cada response
 - Informação disponível para app
 
 **Conversão de Cores:**
+
 - Algoritmos precisos de conversão
 - Suporte HEX, RGB, HSL
 - Formatação para CSS
 - Validação de formato
 
 **Type Safety:**
+
 - Tipos para todos os requests/responses
 - Generics para responses
 - Inferência automática
@@ -519,6 +536,7 @@ Os seguintes arquivos do projeto atual devem ser lidos para entender a API:
 ### React Library
 
 **ThemeProvider:**
+
 - Context API para state global
 - Instância de cliente gerenciada
 - State: theme, loading, error
@@ -526,18 +544,21 @@ Os seguintes arquivos do projeto atual devem ser lidos para entender a API:
 - Props: persistTheme, autoApply, mode
 
 **Hooks:**
+
 - useTheme - acessa context
 - useGenerateTheme - wrapper com loading local
 - useThemeApplier - aplica CSS vars manualmente
 - useUsageStats - estatísticas de uso
 
 **CSS Variables:**
+
 - Aplica todas as vars do Shadcn
 - Suporta light e dark mode
 - Formata HSL corretamente
 - Remove vars quando limpar tema
 
 **Persistência:**
+
 - localStorage para browser
 - SSR-safe (check window)
 - Carrega no mount
@@ -545,12 +566,14 @@ Os seguintes arquivos do projeto atual devem ser lidos para entender a API:
 - Remove ao limpar
 
 **SSR Support:**
+
 - Verifica typeof window
 - Não quebra em server
 - Hidratação correta
 - Next.js friendly
 
 **Componentes (opcional - implementar depois):**
+
 - ThemeSelector - UI para escolher tema
 - ColorPicker - Picker de cores
 - ThemePreview - Preview do tema
@@ -566,9 +589,7 @@ Os seguintes arquivos do projeto atual devem ser lidos para entender a API:
 {
   "name": "dheme-sdk-monorepo",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "build": "npm run build --workspaces",
     "dev": "npm run dev --workspaces",
@@ -634,12 +655,14 @@ coverage/
 ## Ordem de Implementação Sugerida
 
 ### Fase 1: Setup Inicial
+
 1. Criar estrutura de diretórios
 2. Configurar workspaces
 3. Configurar TypeScript
 4. Configurar build tools (tsup)
 
 ### Fase 2: SDK Base - Core
+
 1. Implementar types.ts (todos os tipos)
 2. Implementar errors.ts (classes de erro)
 3. Implementar constants.ts
@@ -648,47 +671,55 @@ coverage/
 6. Implementar utils/request.ts
 
 ### Fase 3: SDK Base - Middleware
+
 1. Implementar middleware/retry.ts
 2. Implementar middleware/interceptors.ts
 3. Implementar middleware/auth.ts
 4. Implementar middleware/rateLimitHandler.ts
 
 ### Fase 4: SDK Base - Client
+
 1. Implementar client.ts (classe principal)
 2. Implementar modules/theme.ts
 3. Implementar modules/usage.ts
 4. Implementar index.ts (exports)
 
 ### Fase 5: SDK Base - Exemplos e Testes
+
 1. Criar exemplos de uso
 2. Escrever testes unitários
 3. Testar em diferentes ambientes
 
 ### Fase 6: React Library - Core
+
 1. Implementar types.ts
 2. Implementar ThemeContext.tsx
 3. Implementar utils/cssVariables.ts
 4. Implementar utils/localStorage.ts
 
 ### Fase 7: React Library - Provider e Hooks
+
 1. Implementar ThemeProvider.tsx
 2. Implementar hooks/useTheme.ts
 3. Implementar hooks/useGenerateTheme.ts
 4. Implementar hooks/useThemeApplier.ts
 
 ### Fase 8: React Library - Componentes (Opcional)
+
 1. Implementar components/ThemeSelector.tsx
 2. Implementar components/ColorPicker.tsx
 3. Implementar components/ThemePreview.tsx
 4. Implementar components/UsageIndicator.tsx
 
 ### Fase 9: React Library - Finalização
+
 1. Implementar index.ts (exports)
 2. Criar exemplos de uso
 3. Escrever testes
 4. Testar com Next.js, Vite, CRA
 
 ### Fase 10: Documentação e Publicação
+
 1. Escrever README para cada pacote
 2. Escrever CHANGELOG
 3. Configurar CI/CD
@@ -699,23 +730,27 @@ coverage/
 ## Considerações Importantes
 
 ### Compatibilidade
+
 - Node.js >= 18 (fetch nativo)
 - React >= 18 (concurrent features)
 - TypeScript >= 5.0
 
 ### Segurança
+
 - Nunca logar API keys
 - Validar inputs
 - Sanitizar outputs
 - HTTPS only
 
 ### Performance
+
 - Tree-shaking friendly
 - Bundle size otimizado
 - Lazy loading onde possível
 - Memoização no React
 
 ### Developer Experience
+
 - Type safety completo
 - Autocomplete no IDE
 - Mensagens de erro claras
@@ -723,6 +758,7 @@ coverage/
 - Exemplos práticos
 
 ### Testes
+
 - Testes unitários para utils
 - Testes de integração para client
 - Testes de componentes React
@@ -735,6 +771,7 @@ coverage/
 Este plano serve como **documentação completa** para implementar a SDK Dheme. O README.md principal na pasta `sdk/` deve conter uma versão expandida deste plano com ainda mais detalhes, exemplos de código completos, e explicações passo a passo de cada implementação.
 
 A SDK deve ser:
+
 - ✅ Type-safe
 - ✅ Bem documentada
 - ✅ Testada
