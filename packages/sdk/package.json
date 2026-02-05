@@ -1,6 +1,6 @@
 {
   "name": "@dheme/sdk",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "TypeScript SDK for Dheme Theme Generator API",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
