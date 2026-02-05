@@ -49,6 +49,19 @@ export function validateGenerateThemeRequest(params: GenerateThemeRequest): void
     }
   }
 
+  // Validar format
+  if (params.format !== undefined) {
+    const validFormats = ['object', 'css', 'tokens'];
+    if (!validFormats.includes(params.format)) {
+      errors.format = ['Format must be one of: object, css, tokens'];
+    }
+  }
+
+  // Validar template
+  if (params.template !== undefined && typeof params.template !== 'string') {
+    errors.template = ['Template must be a string'];
+  }
+
   // Se houver erros, lançar ValidationError
   if (Object.keys(errors).length > 0) {
     throw new ValidationError('Invalid request parameters', errors);

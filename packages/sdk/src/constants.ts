@@ -1,6 +1,16 @@
 import type { RetryConfig } from './types';
 
-export const DEFAULT_BASE_URL = 'https://theme.dheme.com';
+const getBaseUrl = (): string => {
+  try {
+    return typeof process !== 'undefined' && process.env?.DHEME_BASE_URL
+      ? process.env.DHEME_BASE_URL
+      : 'https://www.dheme.com';
+  } catch {
+    return 'https://www.dheme.com';
+  }
+};
+
+export const DEFAULT_BASE_URL = getBaseUrl();
 
 /**
  * Timeout padrão (30 segundos)

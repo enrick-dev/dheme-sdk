@@ -77,6 +77,10 @@ export interface GenerateThemeRequest {
   cardIsColored?: boolean;
   /** Background com cor (opcional, default: true) */
   backgroundIsColored?: boolean;
+  /** Formato de resposta (opcional, default: 'object') */
+  format?: 'object' | 'css' | 'tokens';
+  /** Template customizado para mapeamento de keys (opcional) */
+  template?: string;
 }
 
 /**
