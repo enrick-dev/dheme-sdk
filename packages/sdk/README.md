@@ -47,7 +47,7 @@ const client = new DhemeClient({
   apiKey: 'dheme_abc12345_...',
 
   // Optional — defaults shown
-  baseUrl: 'https://theme.dheme.com',
+  baseUrl: 'https://www.dheme.com',
   timeout: 30000,
   debug: false,
 
@@ -68,14 +68,44 @@ const client = new DhemeClient({
 });
 ```
 
-| Option         | Type           | Default                   | Description                        |
-| -------------- | -------------- | ------------------------- | ---------------------------------- |
-| `apiKey`       | `string`       | -                         | **Required.** Your Dheme API key.  |
-| `baseUrl`      | `string`       | `https://theme.dheme.com` | API base URL.                      |
-| `timeout`      | `number`       | `30000`                   | Request timeout in milliseconds.   |
-| `debug`        | `boolean`      | `false`                   | Log requests/responses to console. |
-| `retryConfig`  | `RetryConfig`  | See above                 | Exponential backoff configuration. |
-| `interceptors` | `Interceptors` | `undefined`               | Request/response hooks.            |
+| Option         | Type           | Default                 | Description                        |
+| -------------- | -------------- | ----------------------- | ---------------------------------- |
+| `apiKey`       | `string`       | -                       | **Required.** Your Dheme API key.  |
+| `baseUrl`      | `string`       | `https://www.dheme.com` | API base URL.                      |
+| `timeout`      | `number`       | `30000`                 | Request timeout in milliseconds.   |
+| `debug`        | `boolean`      | `false`                 | Log requests/responses to console. |
+| `retryConfig`  | `RetryConfig`  | See above               | Exponential backoff configuration. |
+| `interceptors` | `Interceptors` | `undefined`             | Request/response hooks.            |
+
+## Environment Variables
+
+| Variable         | Description                          | Default                 |
+| ---------------- | ------------------------------------ | ----------------------- |
+| `DHEME_BASE_URL` | Override the API base URL            | `https://www.dheme.com` |
+| `DHEME_API_KEY`  | API key (use in code, not auto-read) | -                       |
+
+For local development, set `DHEME_BASE_URL` in your `.env.local` (Next.js) or `.env`:
+
+```bash
+DHEME_BASE_URL=http://localhost:3005
+```
+
+The SDK reads this automatically — no code changes needed. When the variable is absent, it defaults to production.
+
+> **Priority:** `baseUrl` in constructor > `DHEME_BASE_URL` env var > default (`https://www.dheme.com`)
+
+## API Endpoints
+
+All methods hit the base URL `https://www.dheme.com`:
+
+| Method                | HTTP                              | Description                                 |
+| --------------------- | --------------------------------- | ------------------------------------------- |
+| `generateTheme()`     | `POST /api/generate-theme`        | Full theme (HSL color tokens + backgrounds) |
+| `generateShadcnCSS()` | `POST /api/generate-theme/shadcn` | CSS text (`:root` + `.dark`)                |
+| `generateTokens()`    | `POST /api/generate-theme/tokens` | Multi-format tokens (HSL, RGB, HEX)         |
+| `getUsage()`          | `GET /api/usage`                  | Usage statistics and rate limits            |
+
+> **Tip:** The main endpoint (`/api/generate-theme`) also supports a `format` parameter (`"object"`, `"css"`, `"tokens"`) — the SDK's separate methods are convenience wrappers for each format.
 
 ## Methods
 
@@ -181,19 +211,70 @@ interface GenerateThemeRequest {
   contrastAdjust?: number; // -100–100, default 0
   cardIsColored?: boolean; // default false
   backgroundIsColored?: boolean; // default true
+  format?: 'object' | 'css' | 'tokens'; // default 'object'
+  template?: string; // Custom template name
 }
 ```
 
-| Parameter             | Type      | Required | Range        | Description                                        |
-| --------------------- | --------- | -------- | ------------ | -------------------------------------------------- |
-| `theme`               | `string`  | Yes      | Valid HEX    | Primary color that drives the entire palette.      |
-| `secondaryColor`      | `string`  | No       | Valid HEX    | Secondary/accent color. Auto-generated if omitted. |
-| `radius`              | `number`  | No       | `0`–`2`      | Border radius for UI components (rem).             |
-| `saturationAdjust`    | `number`  | No       | `-100`–`100` | Increase or decrease overall saturation.           |
-| `lightnessAdjust`     | `number`  | No       | `-100`–`100` | Increase or decrease overall lightness.            |
-| `contrastAdjust`      | `number`  | No       | `-100`–`100` | Increase or decrease contrast between surfaces.    |
-| `cardIsColored`       | `boolean` | No       | -            | If `true`, card backgrounds get a subtle tint.     |
-| `backgroundIsColored` | `boolean` | No       | -            | If `false`, backgrounds are pure white/black.      |
+| Parameter             | Type      | Required | Range                           | Description                                        |
+| --------------------- | --------- | -------- | ------------------------------- | -------------------------------------------------- |
+| `theme`               | `string`  | Yes      | Valid HEX                       | Primary color that drives the entire palette.      |
+| `secondaryColor`      | `string`  | No       | Valid HEX                       | Secondary/accent color. Auto-generated if omitted. |
+| `radius`              | `number`  | No       | `0`–`2`                         | Border radius for UI components (rem).             |
+| `saturationAdjust`    | `number`  | No       | `-100`–`100`                    | Increase or decrease overall saturation.           |
+| `lightnessAdjust`     | `number`  | No       | `-100`–`100`                    | Increase or decrease overall lightness.            |
+| `contrastAdjust`      | `number`  | No       | `-100`–`100`                    | Increase or decrease contrast between surfaces.    |
+| `cardIsColored`       | `boolean` | No       | -                               | If `true`, card backgrounds get a subtle tint.     |
+| `backgroundIsColored` | `boolean` | No       | -                               | If `false`, backgrounds are pure white/black.      |
+| `format`              | `string`  | No       | `"object"`, `"css"`, `"tokens"` | Response format (default: `"object"`).             |
+| `template`            | `string`  | No       | -                               | Custom template name for color key remapping.      |
+
+### The `format` Parameter
+
+The `format` parameter controls the response format from the main `/api/generate-theme` endpoint:
+
+| Value      | Description                                 | Equivalent method     |
+| ---------- | ------------------------------------------- | --------------------- |
+| `"object"` | JSON with HSL color tokens (default)        | `generateTheme()`     |
+| `"css"`    | CSS text with `:root` and `.dark` selectors | `generateShadcnCSS()` |
+| `"tokens"` | Multi-format tokens (HSL, RGB, HEX)         | `generateTokens()`    |
+
+```typescript
+// These two are equivalent:
+const { data } = await client.generateTheme({ theme: '#3b82f6', format: 'object' });
+const { data } = await client.generateTheme({ theme: '#3b82f6' });
+```
+
+### The `template` Parameter
+
+Templates allow you to remap default color key names to custom ones. Templates are configured on the Dheme platform and referenced by name.
+
+```typescript
+// With a template that maps: primary → mainColor, secondary → accentColor
+const { data } = await client.generateTheme({
+  theme: '#3b82f6',
+  template: 'my-custom-template',
+});
+
+// data.colors.light.mainColor instead of data.colors.light.primary
+```
+
+### The `secondaryColor` Parameter
+
+When `secondaryColor` is omitted, the API auto-generates a complementary accent color. Note that `backgrounds.secondary` will be `null` when no secondary color is provided:
+
+```typescript
+// Without secondaryColor
+const { data } = await client.generateTheme({ theme: '#3b82f6' });
+console.log(data.backgrounds.secondary); // null
+
+// With secondaryColor
+const { data } = await client.generateTheme({
+  theme: '#3b82f6',
+  secondaryColor: '#10b981',
+});
+console.log(data.backgrounds.secondary); // { light: '...', dark: '...' }
+```
 
 ## Response Types
 
@@ -215,7 +296,7 @@ interface GenerateThemeResponse {
   };
   backgrounds: {
     primary: { light: string; dark: string };
-    secondary: { light: string; dark: string } | null;
+    secondary: { light: string; dark: string } | null; // null when no secondaryColor
   };
 }
 ```
@@ -280,8 +361,8 @@ interface UsageResponse {
   limit: number;
   remaining: number;
   percentage: number;
-  resetAt: string;
-  plan: string;
+  resetAt: string; // ISO 8601
+  plan: string; // 'basic' | 'professional' | 'business' | 'enterprise'
 }
 ```
 
@@ -463,29 +544,12 @@ import {
 ### Conversions
 
 ```typescript
-// HEX → HSL
-hexToHSL('#3b82f6');
-// { h: 221.2, s: 83.2, l: 53.3 }
-
-// HSL → RGB
-hslToRGB({ h: 221.2, s: 83.2, l: 53.3 });
-// { r: 59, g: 130, b: 246 }
-
-// RGB → HEX
-rgbToHex({ r: 59, g: 130, b: 246 });
-// '#3b82f6'
-
-// HSL → HEX
-hslToHex({ h: 221.2, s: 83.2, l: 53.3 });
-// '#3b82f6'
-
-// HEX → RGB
-hexToRGB('#3b82f6');
-// { r: 59, g: 130, b: 246 }
-
-// RGB → HSL
-rgbToHSL({ r: 59, g: 130, b: 246 });
-// { h: 221.2, s: 83.2, l: 53.3 }
+hexToHSL('#3b82f6'); // { h: 221.2, s: 83.2, l: 53.3 }
+hslToRGB({ h: 221.2, s: 83.2, l: 53.3 }); // { r: 59, g: 130, b: 246 }
+rgbToHex({ r: 59, g: 130, b: 246 }); // '#3b82f6'
+hslToHex({ h: 221.2, s: 83.2, l: 53.3 }); // '#3b82f6'
+hexToRGB('#3b82f6'); // { r: 59, g: 130, b: 246 }
+rgbToHSL({ r: 59, g: 130, b: 246 }); // { h: 221.2, s: 83.2, l: 53.3 }
 ```
 
 ### Formatting
@@ -565,7 +629,7 @@ export const runtime = 'edge';
 
 const dheme = new DhemeClient({
   apiKey: process.env.DHEME_API_KEY!,
-  timeout: 5000, // Tighter timeout for edge
+  timeout: 5000,
   retryConfig: { maxRetries: 1 },
 });
 
@@ -573,6 +637,33 @@ export default async function handler(request: Request) {
   const { data } = await dheme.generateTheme({ theme: '#8b5cf6' });
   return Response.json(data);
 }
+```
+
+### Using Format Parameter
+
+```typescript
+// Get CSS directly from the main endpoint
+const { data: css } = await client.generateTheme({
+  theme: '#3b82f6',
+  format: 'css',
+});
+
+// Get multi-format tokens from the main endpoint
+const { data: tokens } = await client.generateTheme({
+  theme: '#3b82f6',
+  format: 'tokens',
+});
+```
+
+### Using Templates
+
+```typescript
+// Use a custom template for key remapping
+const { data } = await client.generateTheme({
+  theme: '#3b82f6',
+  template: 'my-design-system',
+});
+// Color keys are remapped according to the template configuration
 ```
 
 ### Multi-Format Tokens
@@ -615,6 +706,15 @@ import type {
   ResponseInterceptor,
 } from '@dheme/sdk';
 ```
+
+## Plans
+
+| Plan         | Requests/month | Price       |
+| ------------ | -------------- | ----------- |
+| Basic        | 300            | Free        |
+| Professional | 50,000         | Coming soon |
+| Business     | 250,000        | Coming soon |
+| Enterprise   | 1,000,000      | Coming soon |
 
 ## Compatibility
 

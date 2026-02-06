@@ -6,13 +6,13 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w packages/sdk && npm run build -w packages/react",
+    "build": "npm run build -w packages/sdk && npm run build -w packages/react && npm run build -w packages/next",
     "dev": "npm run dev --workspaces",
     "test": "npm run test --workspaces",
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces",
-    "clean": "rm -rf packages/sdk/dist packages/react/dist",
-    "link:local": "cd packages/sdk && npm link && cd ../react && npm link"
+    "clean": "rm -rf packages/sdk/dist packages/react/dist packages/next/dist",
+    "link:local": "cd packages/sdk && npm link && cd ../react && npm link && cd ../next && npm link"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

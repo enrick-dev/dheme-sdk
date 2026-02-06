@@ -1,12 +1,9 @@
 import { useState, useCallback } from 'react';
-import { useTheme } from './useTheme';
+import { useThemeActions } from './useThemeActions';
 import type { GenerateThemeRequest } from '@dheme/sdk';
 
-/**
- * Hook para gerar temas com loading state local
- */
 export function useGenerateTheme() {
-  const { generateTheme: generate } = useTheme();
+  const { generateTheme: generate } = useThemeActions();
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -18,7 +15,7 @@ export function useGenerateTheme() {
       try {
         await generate(params);
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Unknown error');
+        const error = err instanceof Error ? err : new Error(String(err));
         setError(error);
         throw error;
       } finally {
@@ -28,9 +25,5 @@ export function useGenerateTheme() {
     [generate]
   );
 
-  return {
-    generateTheme,
-    isGenerating,
-    error,
-  };
+  return { generateTheme, isGenerating, error };
 }
