@@ -77,6 +77,8 @@ export interface GenerateThemeRequest {
   cardIsColored?: boolean;
   /** Background com cor (opcional, default: true) */
   backgroundIsColored?: boolean;
+  /** Bordas com cor (opcional, default: false) */
+  borderIsColored?: boolean;
   /** Formato de resposta (opcional, default: 'object') */
   format?: 'object' | 'css' | 'tokens';
   /** Template customizado para mapeamento de keys (opcional) */
@@ -138,6 +140,7 @@ export interface GenerateThemeResponse {
   contrastAdjust: number;
   cardIsColored: boolean;
   backgroundIsColored: boolean;
+  borderIsColored: boolean;
   colors: {
     light: ColorTokens;
     dark: ColorTokens;

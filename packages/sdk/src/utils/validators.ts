@@ -40,7 +40,7 @@ export function validateGenerateThemeRequest(params: GenerateThemeRequest): void
   }
 
   // Validar booleans
-  const booleans = ['cardIsColored', 'backgroundIsColored'] as const;
+  const booleans = ['cardIsColored', 'backgroundIsColored', 'borderIsColored'] as const;
 
   for (const key of booleans) {
     const value = params[key];

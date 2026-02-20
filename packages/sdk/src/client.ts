@@ -68,25 +68,31 @@ export class DhemeClient {
   }
 
   /**
-   * Gera CSS do Shadcn
+   * Gera CSS pronto para injetar (text/css)
    */
-  async generateShadcnCSS(params: GenerateThemeRequest): Promise<string> {
+  async generateCSS(params: Omit<GenerateThemeRequest, 'format'>): Promise<string> {
     validateGenerateThemeRequest(params);
 
-    const response = await this.makeRawRequest('POST', '/api/generate-theme/shadcn', params);
+    const response = await this.makeRawRequest('POST', '/api/generate-theme', {
+      ...params,
+      format: 'css',
+    });
 
     return response.text();
   }
 
   /**
-   * Gera tokens com múltiplos formatos
+   * Gera tokens com múltiplos formatos (HSL + RGB + HEX)
    */
   async generateTokens(
-    params: GenerateThemeRequest
+    params: Omit<GenerateThemeRequest, 'format'>
   ): Promise<ResponseWithRateLimit<TokensResponse>> {
     validateGenerateThemeRequest(params);
 
-    return this.makeApiRequest<TokensResponse>('POST', '/api/generate-theme/tokens', params);
+    return this.makeApiRequest<TokensResponse>('POST', '/api/generate-theme', {
+      ...params,
+      format: 'tokens',
+    });
   }
 
   /**
@@ -191,14 +197,22 @@ export class DhemeClient {
       case 401:
         throw new AuthenticationError(message, errorData);
 
-      case 429:
-        throw new RateLimitError(
-          message,
-          (errorData.limit as number) || 0,
-          (errorData.resetAt as string) || new Date().toISOString(),
-          (errorData.plan as string) || 'unknown',
-          errorData
+      case 404:
+        throw new DhemeError(message, 404, errorData);
+
+      case 429: {
+        const resetAt =
+          response.headers.get('X-RateLimit-Reset') ||
+          response.headers.get('x-ratelimit-reset') ||
+          new Date().toISOString();
+        const limit = parseInt(
+          response.headers.get('X-RateLimit-Limit') ||
+            response.headers.get('x-ratelimit-limit') ||
+            '0',
+          10
         );
+        throw new RateLimitError(message, limit, resetAt, 'unknown', errorData);
+      }
 
       case 500:
       case 502:

@@ -98,14 +98,14 @@ The SDK reads this automatically — no code changes needed. When the variable i
 
 All methods hit the base URL `https://www.dheme.com`:
 
-| Method                | HTTP                              | Description                                 |
-| --------------------- | --------------------------------- | ------------------------------------------- |
-| `generateTheme()`     | `POST /api/generate-theme`        | Full theme (HSL color tokens + backgrounds) |
-| `generateShadcnCSS()` | `POST /api/generate-theme/shadcn` | CSS text (`:root` + `.dark`)                |
-| `generateTokens()`    | `POST /api/generate-theme/tokens` | Multi-format tokens (HSL, RGB, HEX)         |
-| `getUsage()`          | `GET /api/usage`                  | Usage statistics and rate limits            |
+| Method             | HTTP                       | Description                                 |
+| ------------------ | -------------------------- | ------------------------------------------- |
+| `generateTheme()`  | `POST /api/generate-theme` | Full theme (HSL color tokens + backgrounds) |
+| `generateCSS()`    | `POST /api/generate-theme` | CSS text (`:root` + `.dark`)                |
+| `generateTokens()` | `POST /api/generate-theme` | Multi-format tokens (HSL, RGB, HEX)         |
+| `getUsage()`       | `GET /api/usage`           | Usage statistics and rate limits            |
 
-> **Tip:** The main endpoint (`/api/generate-theme`) also supports a `format` parameter (`"object"`, `"css"`, `"tokens"`) — the SDK's separate methods are convenience wrappers for each format.
+> **Note:** All three theme generation methods hit the same endpoint. The SDK sets the `format` parameter automatically based on the method called.
 
 ## Methods
 
@@ -129,12 +129,12 @@ const { data, rateLimit } = await client.generateTheme({
 
 ---
 
-### `generateShadcnCSS(params)`
+### `generateCSS(params)`
 
-Generates CSS text ready to paste into a shadcn/ui project (`:root` + `.dark` selectors).
+Generates CSS text ready to inject into your app (`:root` + `.dark` selectors).
 
 ```typescript
-const css = await client.generateShadcnCSS({
+const css = await client.generateCSS({
   theme: '#3b82f6',
 });
 
@@ -199,7 +199,7 @@ console.log(usage);
 
 ## Request Parameters
 
-All theme generation methods (`generateTheme`, `generateShadcnCSS`, `generateTokens`) accept the same parameters:
+All theme generation methods (`generateTheme`, `generateCSS`, `generateTokens`) accept the same parameters:
 
 ```typescript
 interface GenerateThemeRequest {
@@ -211,8 +211,9 @@ interface GenerateThemeRequest {
   contrastAdjust?: number; // -100–100, default 0
   cardIsColored?: boolean; // default false
   backgroundIsColored?: boolean; // default true
+  borderIsColored?: boolean; // default false
   format?: 'object' | 'css' | 'tokens'; // default 'object'
-  template?: string; // Custom template name
+  template?: string; // Custom template slug
 }
 ```
 
@@ -226,18 +227,19 @@ interface GenerateThemeRequest {
 | `contrastAdjust`      | `number`  | No       | `-100`–`100`                    | Increase or decrease contrast between surfaces.    |
 | `cardIsColored`       | `boolean` | No       | -                               | If `true`, card backgrounds get a subtle tint.     |
 | `backgroundIsColored` | `boolean` | No       | -                               | If `false`, backgrounds are pure white/black.      |
+| `borderIsColored`     | `boolean` | No       | -                               | If `true`, borders get a primary color tint.       |
 | `format`              | `string`  | No       | `"object"`, `"css"`, `"tokens"` | Response format (default: `"object"`).             |
-| `template`            | `string`  | No       | -                               | Custom template name for color key remapping.      |
+| `template`            | `string`  | No       | -                               | Template slug for custom key remapping.            |
 
 ### The `format` Parameter
 
-The `format` parameter controls the response format from the main `/api/generate-theme` endpoint:
+The `format` parameter controls the response format. The SDK convenience methods set it automatically:
 
-| Value      | Description                                 | Equivalent method     |
-| ---------- | ------------------------------------------- | --------------------- |
-| `"object"` | JSON with HSL color tokens (default)        | `generateTheme()`     |
-| `"css"`    | CSS text with `:root` and `.dark` selectors | `generateShadcnCSS()` |
-| `"tokens"` | Multi-format tokens (HSL, RGB, HEX)         | `generateTokens()`    |
+| Value      | Description                                 | SDK method         |
+| ---------- | ------------------------------------------- | ------------------ |
+| `"object"` | JSON with HSL color tokens (default)        | `generateTheme()`  |
+| `"css"`    | CSS text with `:root` and `.dark` selectors | `generateCSS()`    |
+| `"tokens"` | Multi-format tokens (HSL, RGB, HEX)         | `generateTokens()` |
 
 ```typescript
 // These two are equivalent:
@@ -604,7 +606,7 @@ export async function GET(request: Request) {
   const color = searchParams.get('color') || '#3b82f6';
 
   try {
-    const css = await dheme.generateShadcnCSS({ theme: color });
+    const css = await dheme.generateCSS({ theme: color });
     return new Response(css, {
       headers: { 'Content-Type': 'text/css' },
     });
