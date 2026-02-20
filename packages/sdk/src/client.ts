@@ -29,12 +29,12 @@ import { applyRequestInterceptors, applyResponseInterceptors } from './middlewar
  * Cliente principal da SDK Dheme
  */
 export class DhemeClient {
-  private readonly config: Required<Omit<DhemeClientConfig, 'interceptors'>> & {
+  private readonly config: Required<Omit<DhemeClientConfig, 'interceptors' | 'apiKey'>> & {
+    apiKey?: string;
     interceptors?: DhemeClientConfig['interceptors'];
   };
 
   constructor(config: DhemeClientConfig) {
-    // Validar API key
     validateApiKey(config.apiKey);
 
     // Configuração com defaults
@@ -141,12 +141,14 @@ export class DhemeClient {
     const url = `${this.config.baseUrl}${endpoint}`;
 
     // Configuração do request
+    const authHeader = this.config.apiKey ? { 'x-api-key': this.config.apiKey } : {};
+
     let requestConfig: RequestConfig = {
       method,
       url,
       headers: {
         ...DEFAULT_HEADERS,
-        'x-api-key': this.config.apiKey,
+        ...authHeader,
       },
       body,
       timeout: this.config.timeout,

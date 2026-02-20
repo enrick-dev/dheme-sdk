@@ -71,36 +71,38 @@ The main provider. Manages theme state, API calls, caching, and CSS variable app
 
 ```tsx
 <DhemeProvider
-  apiKey="dheme_abc12345_..."    // Required — your Dheme API key
-  theme="#3b82f6"                // Primary color (auto-generates on mount)
-  themeParams={{                 // Optional generation params
+  apiKey="dheme_abc12345_..." // Required — your Dheme API key
+  theme="#3b82f6" // Primary color (auto-generates on mount)
+  themeParams={{
+    // Optional generation params
     radius: 0.75,
     saturationAdjust: 10,
     secondaryColor: '#10b981',
+    borderIsColored: false,
   }}
-  defaultMode="light"            // 'light' | 'dark' (default: 'light')
-  persist={true}                 // Cache in localStorage (default: true)
-  autoApply={true}               // Apply CSS vars automatically (default: true)
-  onThemeChange={(theme) => {}}  // Callback when theme changes
-  onModeChange={(mode) => {}}    // Callback when mode changes
-  onError={(error) => {}}        // Callback on error
+  defaultMode="light" // 'light' | 'dark' (default: 'light')
+  persist={true} // Cache in localStorage (default: true)
+  autoApply={true} // Apply CSS vars automatically (default: true)
+  onThemeChange={(theme) => {}} // Callback when theme changes
+  onModeChange={(mode) => {}} // Callback when mode changes
+  onError={(error) => {}} // Callback on error
 >
   <App />
 </DhemeProvider>
 ```
 
-| Prop            | Type                                     | Default   | Description                            |
-| --------------- | ---------------------------------------- | --------- | -------------------------------------- |
-| `apiKey`        | `string`                                 | -         | **Required.** Your Dheme API key.      |
+| Prop            | Type                                     | Default   | Description                                 |
+| --------------- | ---------------------------------------- | --------- | ------------------------------------------- |
+| `apiKey`        | `string`                                 | -         | **Required.** Your Dheme API key.           |
 | `theme`         | `string`                                 | -         | Primary HEX color. Auto-generates on mount. |
-| `themeParams`   | `Omit<GenerateThemeRequest, 'theme'>`    | -         | Additional generation parameters.      |
-| `defaultMode`   | `'light' \| 'dark'`                      | `'light'` | Initial color mode.                    |
-| `baseUrl`       | `string`                                 | -         | Override API base URL.                 |
-| `persist`       | `boolean`                                | `true`    | Cache theme in localStorage.           |
-| `autoApply`     | `boolean`                                | `true`    | Apply CSS variables to `:root`.        |
-| `onThemeChange` | `(theme: GenerateThemeResponse) => void` | -         | Called when theme data changes.        |
-| `onModeChange`  | `(mode: ThemeMode) => void`              | -         | Called when mode changes.              |
-| `onError`       | `(error: Error) => void`                 | -         | Called on API errors.                  |
+| `themeParams`   | `Omit<GenerateThemeRequest, 'theme'>`    | -         | Additional generation parameters.           |
+| `defaultMode`   | `'light' \| 'dark'`                      | `'light'` | Initial color mode.                         |
+| `baseUrl`       | `string`                                 | -         | Override API base URL.                      |
+| `persist`       | `boolean`                                | `true`    | Cache theme in localStorage.                |
+| `autoApply`     | `boolean`                                | `true`    | Apply CSS variables to `:root`.             |
+| `onThemeChange` | `(theme: GenerateThemeResponse) => void` | -         | Called when theme data changes.             |
+| `onModeChange`  | `(mode: ThemeMode) => void`              | -         | Called when mode changes.                   |
+| `onError`       | `(error: Error) => void`                 | -         | Called on API errors.                       |
 
 ### `<DhemeScript>`
 
@@ -108,17 +110,17 @@ Blocking script that prevents FOUC by applying cached theme CSS variables before
 
 ```tsx
 <DhemeScript
-  defaultMode="light"  // Fallback mode (default: 'light')
-  nonce="abc123"       // CSP nonce (optional)
+  defaultMode="light" // Fallback mode (default: 'light')
+  nonce="abc123" // CSP nonce (optional)
 />
 ```
 
 Place it **before** `<DhemeProvider>` in your component tree, as high as possible.
 
-| Prop          | Type                 | Default   | Description               |
-| ------------- | -------------------- | --------- | ------------------------- |
-| `defaultMode` | `'light' \| 'dark'`  | `'light'` | Fallback if no cache.     |
-| `nonce`       | `string`             | -         | CSP nonce for the script. |
+| Prop          | Type                | Default   | Description               |
+| ------------- | ------------------- | --------- | ------------------------- |
+| `defaultMode` | `'light' \| 'dark'` | `'light'` | Fallback if no cache.     |
+| `nonce`       | `string`            | -         | CSP nonce for the script. |
 
 ## Hooks
 
@@ -134,17 +136,15 @@ function MyComponent() {
 
   if (!isReady) return <Skeleton />;
 
-  return (
-    <p>Primary: {theme.colors[mode].primary.h}°</p>
-  );
+  return <p>Primary: {theme.colors[mode].primary.h}°</p>;
 }
 ```
 
-| Return    | Type                        | Description                           |
-| --------- | --------------------------- | ------------------------------------- |
-| `theme`   | `GenerateThemeResponse \| null` | The full theme data.              |
-| `mode`    | `'light' \| 'dark'`        | Current color mode.                   |
-| `isReady` | `boolean`                   | `true` once theme is loaded.          |
+| Return    | Type                            | Description                  |
+| --------- | ------------------------------- | ---------------------------- |
+| `theme`   | `GenerateThemeResponse \| null` | The full theme data.         |
+| `mode`    | `'light' \| 'dark'`             | Current color mode.          |
+| `isReady` | `boolean`                       | `true` once theme is loaded. |
 
 ### `useThemeActions()`
 
@@ -157,24 +157,21 @@ function ThemeToggle() {
   const { setMode, isLoading } = useThemeActions();
 
   return (
-    <button
-      disabled={isLoading}
-      onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
-    >
+    <button disabled={isLoading} onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}>
       Toggle
     </button>
   );
 }
 ```
 
-| Return          | Type                                             | Description                     |
-| --------------- | ------------------------------------------------ | ------------------------------- |
-| `generateTheme` | `(params: GenerateThemeRequest) => Promise<void>` | Generate a new theme.          |
-| `setMode`       | `(mode: ThemeMode) => void`                      | Switch light/dark mode.         |
-| `clearTheme`    | `() => void`                                     | Clear theme and cache.          |
-| `isLoading`     | `boolean`                                        | `true` during API call.         |
-| `error`         | `Error \| null`                                  | Last error, if any.             |
-| `client`        | `DhemeClient`                                    | Raw SDK client instance.        |
+| Return          | Type                                              | Description              |
+| --------------- | ------------------------------------------------- | ------------------------ |
+| `generateTheme` | `(params: GenerateThemeRequest) => Promise<void>` | Generate a new theme.    |
+| `setMode`       | `(mode: ThemeMode) => void`                       | Switch light/dark mode.  |
+| `clearTheme`    | `() => void`                                      | Clear theme and cache.   |
+| `isLoading`     | `boolean`                                         | `true` during API call.  |
+| `error`         | `Error \| null`                                   | Last error, if any.      |
+| `client`        | `DhemeClient`                                     | Raw SDK client instance. |
 
 ### `useGenerateTheme()`
 
@@ -187,10 +184,7 @@ function ColorPicker() {
   const { generateTheme, isGenerating, error } = useGenerateTheme();
 
   return (
-    <button
-      disabled={isGenerating}
-      onClick={() => generateTheme({ theme: '#ef4444' })}
-    >
+    <button disabled={isGenerating} onClick={() => generateTheme({ theme: '#ef4444' })}>
       {isGenerating ? 'Generating...' : 'Apply Red'}
     </button>
   );
@@ -220,10 +214,10 @@ function UsageInfo() {
 
 The provider uses **two separate React contexts** to minimize re-renders:
 
-| Context               | Contains                             | Changes when                   |
-| --------------------- | ------------------------------------ | ------------------------------ |
-| `ThemeDataContext`     | `theme`, `mode`, `isReady`           | Theme data or mode changes     |
-| `ThemeActionsContext`  | `generateTheme`, `setMode`, `isLoading`, `error` | Actions are triggered |
+| Context               | Contains                                         | Changes when               |
+| --------------------- | ------------------------------------------------ | -------------------------- |
+| `ThemeDataContext`    | `theme`, `mode`, `isReady`                       | Theme data or mode changes |
+| `ThemeActionsContext` | `generateTheme`, `setMode`, `isLoading`, `error` | Actions are triggered      |
 
 Components using `useTheme()` (data) **do not re-render** when `isLoading` changes.
 Components using `useThemeActions()` (actions) **do not re-render** when theme data changes.
@@ -238,11 +232,12 @@ Themes are cached in `localStorage` with deterministic keys based on input param
 same input params → same cache key → same theme
 ```
 
-The cache key is derived from: `theme`, `secondaryColor`, `radius`, `saturationAdjust`, `lightnessAdjust`, `contrastAdjust`, `cardIsColored`, `backgroundIsColored`.
+The cache key is derived from: `theme`, `secondaryColor`, `radius`, `saturationAdjust`, `lightnessAdjust`, `contrastAdjust`, `cardIsColored`, `backgroundIsColored`, `borderIsColored`.
 
 ### Stale-while-revalidate
 
 On cached visits, the provider:
+
 1. Serves the cached theme **immediately** (zero latency)
 2. Fires a background API request to check for updates
 3. Only updates the UI if the response differs from the cache
@@ -335,7 +330,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     >
       <App />
     </DhemeProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
 ```
 
@@ -351,7 +346,11 @@ export default function App() {
 
   return (
     <div>
-      <h1 style={{ color: `hsl(${theme.colors[mode].primary.h} ${theme.colors[mode].primary.s}% ${theme.colors[mode].primary.l}%)` }}>
+      <h1
+        style={{
+          color: `hsl(${theme.colors[mode].primary.h} ${theme.colors[mode].primary.s}% ${theme.colors[mode].primary.l}%)`,
+        }}
+      >
         Dheme Theme
       </h1>
       <button onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}>
@@ -382,11 +381,11 @@ import type {
 
 ## Related Packages
 
-| Package        | Description                     | When to use                    |
-| -------------- | ------------------------------- | ------------------------------ |
-| `@dheme/sdk`   | Core TypeScript SDK             | Direct API access, Node.js     |
-| `@dheme/react` | React bindings (this package)   | Vite, CRA, React SPAs         |
-| `@dheme/next`  | Next.js App Router bindings     | Next.js 14+ with SSR           |
+| Package        | Description                   | When to use                |
+| -------------- | ----------------------------- | -------------------------- |
+| `@dheme/sdk`   | Core TypeScript SDK           | Direct API access, Node.js |
+| `@dheme/react` | React bindings (this package) | Vite, CRA, React SPAs      |
+| `@dheme/next`  | Next.js App Router bindings   | Next.js 14+ with SSR       |
 
 ## License
 

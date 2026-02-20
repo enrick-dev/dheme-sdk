@@ -2,8 +2,8 @@
  * Configuração do cliente Dheme SDK
  */
 export interface DhemeClientConfig {
-  /** API key (obrigatório) */
-  apiKey: string;
+  /** API key (obrigatório para uso externo; omitir para rotas internas sem autenticação) */
+  apiKey?: string;
   /** Base URL da API (opcional, default: production URL) */
   baseUrl?: string;
   /** Timeout em milissegundos (opcional, default: 30000) */

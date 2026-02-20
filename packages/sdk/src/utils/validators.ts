@@ -69,19 +69,10 @@ export function validateGenerateThemeRequest(params: GenerateThemeRequest): void
 }
 
 /**
- * Valida formato da API key
+ * Valida formato da API key (no-op quando apiKey não fornecida — modo interno)
  */
-export function validateApiKey(apiKey: string): void {
-  if (!apiKey) {
-    throw new ValidationError('API key is required');
+export function validateApiKey(apiKey: string | undefined): void {
+  if (apiKey !== undefined && typeof apiKey !== 'string') {
+    throw new ValidationError('API key must be a string');
   }
-
-  // Formato: dheme_[8 chars]_[...]
-  // const format = /^dheme_[a-zA-Z0-9]{8}_[a-zA-Z0-9_-]+$/;
-
-  // if (!format.test(apiKey)) {
-  //   throw new ValidationError(
-  //     'Invalid API key format. Expected: dheme_xxxxxxxx_...'
-  //   );
-  // }
 }

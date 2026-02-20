@@ -85,6 +85,7 @@ Fetches the theme on the server and renders inline `<style>` + `<script>` tags. 
     // Optional generation params
     radius: 0.75,
     saturationAdjust: 10,
+    borderIsColored: false,
   }}
   defaultMode="light" // 'light' | 'dark' (default: 'light')
   baseUrl="http://localhost:3005" // Override API URL (optional)

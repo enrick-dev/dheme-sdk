@@ -6,7 +6,8 @@ export interface DhemeProviderProps extends ReactProviderProps {
 }
 
 export interface DhemeScriptProps {
-  apiKey: string;
+  /** API key (obrigatório para uso externo; omitir para rotas internas sem autenticação) */
+  apiKey?: string;
   theme: string;
   themeParams?: Omit<GenerateThemeRequest, 'theme'>;
   defaultMode?: ThemeMode;
@@ -15,7 +16,8 @@ export interface DhemeScriptProps {
 }
 
 export interface GenerateThemeStylesOptions {
-  apiKey: string;
+  /** API key (obrigatório para uso externo; omitir para rotas internas sem autenticação) */
+  apiKey?: string;
   theme: string;
   themeParams?: Omit<GenerateThemeRequest, 'theme'>;
   mode?: ThemeMode;

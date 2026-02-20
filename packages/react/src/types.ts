@@ -18,7 +18,8 @@ export interface ThemeActionsState {
 }
 
 export interface DhemeProviderProps {
-  apiKey: string;
+  /** API key (obrigatório para uso externo; omitir para rotas internas sem autenticação) */
+  apiKey?: string;
   theme?: string;
   themeParams?: Omit<GenerateThemeRequest, 'theme'>;
   defaultMode?: ThemeMode;
