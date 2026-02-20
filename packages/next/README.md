@@ -117,6 +117,41 @@ Fetches the theme on the server and renders inline `<style>` + `<script>` tags. 
 </script>
 ```
 
+### `<ThemeGenerator>` (Client Component)
+
+A floating FAB for real-time theme generation. Re-exported from `@dheme/react` with `'use client'` already applied.
+
+```tsx
+// app/layout.tsx
+import { DhemeScript, DhemeProvider, ThemeGenerator } from '@dheme/next';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <DhemeScript apiKey={process.env.DHEME_API_KEY!} theme="#3b82f6" />
+      </head>
+      <body>
+        <DhemeProvider apiKey={process.env.DHEME_API_KEY!} theme="#3b82f6">
+          {children}
+          <ThemeGenerator />
+        </DhemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+`ThemeGenerator` must be placed **inside** `<DhemeProvider>`. It renders a pill-shaped FAB in the bottom-right corner (configurable). Clicking it opens a panel with:
+
+- Color pickers for primary and optional secondary color
+- Sliders for saturation, lightness, and border radius
+- Toggles for colorful card, background, and border
+
+All controls call `generateTheme()` in real time with per-parameter debounce. Changes apply instantly via CSS variables.
+
+See [`@dheme/react` → ThemeGenerator](https://www.npmjs.com/package/@dheme/react#themegenerator) for the full props reference and customization options.
+
 ### `<DhemeProvider>` (Client Component)
 
 Wraps `@dheme/react`'s provider with **cookie synchronization**. When the user changes theme or mode on the client, it writes to cookies so the server can read them on the next request.
@@ -369,6 +404,7 @@ Request →  DhemeScript (Server Component)    DhemeProvider (Client Component)
 | **Caching**              | localStorage         | LRU in-memory + localStorage |
 | **Mode persistence**     | localStorage         | Cookies + localStorage       |
 | **SSR support**          | No                   | Yes                          |
+| **ThemeGenerator**       | Yes                  | Yes (re-exported)            |
 
 ## TypeScript
 

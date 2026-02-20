@@ -1,6 +1,8 @@
 // Components
 export { DhemeProvider } from './components/DhemeProvider';
 export { DhemeScript } from './components/DhemeScript';
+export { ThemeGenerator } from './components/ThemeGenerator';
+export type { ThemeGeneratorProps } from './components/ThemeGenerator';
 
 // Hooks
 export { useTheme } from './hooks/useTheme';

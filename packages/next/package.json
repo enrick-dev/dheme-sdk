@@ -1,6 +1,6 @@
 {
   "name": "@dheme/next",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Next.js App Router bindings for Dheme SDK with server-side theme generation",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

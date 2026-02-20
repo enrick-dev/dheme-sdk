@@ -274,6 +274,139 @@ The provider sets 19 CSS variables + `--radius` on `:root`:
 
 Values are in shadcn/ui format (`h s% l%`), directly compatible with Tailwind CSS `hsl()` usage.
 
+## ThemeGenerator
+
+A floating FAB (Floating Action Button) that lets users generate and preview themes in real time — directly inside your app. No external dependencies beyond React itself.
+
+```tsx
+import { DhemeProvider, ThemeGenerator } from '@dheme/react';
+
+function App() {
+  return (
+    <DhemeProvider apiKey="..." theme="#3b82f6">
+      <MyApp />
+      <ThemeGenerator />
+    </DhemeProvider>
+  );
+}
+```
+
+The component renders as a pill in the corner of the screen. Clicking it expands a panel with color pickers, sliders, and toggles that call `generateTheme()` in real time with per-parameter debounce.
+
+### Props
+
+```tsx
+<ThemeGenerator
+  defaultTheme="#4332f6"           // Initial primary color
+  defaultSecondaryColor="#ab67f1"  // Initial secondary color
+  defaultSaturation={10}           // Initial saturation adjust (-100 to 100)
+  defaultLightness={2}             // Initial lightness adjust (-100 to 100)
+  defaultRadius={0}                // Initial border radius (0 to 2 rem)
+  position="bottom-right"          // 'bottom-right' | 'bottom-left'
+  open={isOpen}                    // Controlled open state (optional)
+  onOpenChange={setIsOpen}         // Controlled open callback (optional)
+  labels={{                        // i18n overrides (all optional)
+    title: 'Theme Generator',
+    primary: 'Primary Color',
+    secondary: 'Secondary Color',
+    saturation: 'Vibrancy',
+    lightness: 'Brightness',
+    reset: 'Restore defaults',
+  }}
+  className="my-fab"               // Extra class on the container (optional)
+/>
+```
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `defaultTheme` | `string` | `'#4332f6'` | Initial primary HEX color. |
+| `defaultSecondaryColor` | `string` | `'#ab67f1'` | Initial secondary HEX color. |
+| `defaultSaturation` | `number` | `10` | Initial saturation adjust (-100–100). |
+| `defaultLightness` | `number` | `2` | Initial lightness adjust (-100–100). |
+| `defaultRadius` | `number` | `0` | Initial border radius (0–2 rem). |
+| `position` | `'bottom-right' \| 'bottom-left'` | `'bottom-right'` | Corner to anchor the FAB. |
+| `open` | `boolean` | — | Controlled open state. Omit for uncontrolled. |
+| `onOpenChange` | `(open: boolean) => void` | — | Called when open state changes. |
+| `labels` | `ThemeGeneratorLabels` | See below | Override any UI text for i18n. |
+| `className` | `string` | — | Extra CSS class on the fixed container. |
+
+#### Default labels
+
+| Key | Default |
+| --- | --- |
+| `title` | `'Theme Generator'` |
+| `description` | `'Generate complete themes from a single color. Changes apply in real time.'` |
+| `baseColors` | `'Base Colors'` |
+| `primary` | `'Primary'` |
+| `secondary` | `'Secondary'` |
+| `optional` | `'Optional'` |
+| `fineTuning` | `'Fine Tuning'` |
+| `saturation` | `'Saturation'` |
+| `lightness` | `'Lightness'` |
+| `borderRadius` | `'Border Radius'` |
+| `advancedOptions` | `'Advanced Options'` |
+| `colorfulCard` | `'Colorful Card'` |
+| `colorfulBackground` | `'Colorful Background'` |
+| `colorfulBorder` | `'Colorful Border'` |
+| `reset` | `'Reset'` |
+| `fabPrimaryLabel` | `'Primary'` |
+
+### How it works
+
+**Real-time generation with debounce**
+
+Each parameter has its own debounce timer. Dragging the saturation slider fires an API call 200ms after the user stops — not on every frame. Color pickers debounce at 150ms.
+
+| Control | Debounce |
+| --- | --- |
+| Color pickers | 150ms |
+| Sliders (saturation, lightness, radius) | 200ms |
+| Boolean toggles (card, background, border) | None — fires immediately |
+| Secondary color enable/disable | None — fires immediately |
+
+**No re-render loops**
+
+State local to the component (`localPrimary`, `localSaturation`, …) is the source of truth for the controls. The component does **not** read back from `useTheme()`. This prevents a loop where `generateTheme()` → theme state update → re-render → re-initialize state → `generateTheme()` again.
+
+**Zero external dependencies**
+
+- Icons: inline SVG (no `lucide-react`)
+- Color picker: built-in gradient + hue slider using pointer events (no `react-colorful`)
+- Styling: inline styles using `hsl(var(--...))` CSS variables — automatically matches the active theme
+
+**Controlled vs uncontrolled**
+
+Omit `open` / `onOpenChange` for fully uncontrolled behavior. Provide both for external control:
+
+```tsx
+const [open, setOpen] = useState(false);
+
+<ThemeGenerator open={open} onOpenChange={setOpen} />
+<button onClick={() => setOpen(true)}>Open Theme Editor</button>
+```
+
+### Placement
+
+`ThemeGenerator` must be a **descendant** of `<DhemeProvider>` — it consumes `useThemeActions()` internally.
+
+```tsx
+// ✅ Correct
+<DhemeProvider ...>
+  <App />
+  <ThemeGenerator />
+</DhemeProvider>
+
+// ❌ Wrong — outside the provider
+<>
+  <ThemeGenerator />
+  <DhemeProvider ...>
+    <App />
+  </DhemeProvider>
+</>
+```
+
+---
+
 ## Utilities
 
 ### `themeToCSS(theme, mode)`

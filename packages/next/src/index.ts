@@ -1,6 +1,8 @@
 // Next.js Components
 export { DhemeProvider } from './components/DhemeProvider';
 export { DhemeScript } from './components/DhemeScript';
+export { ThemeGenerator } from './components/ThemeGenerator';
+export type { ThemeGeneratorProps } from './components/ThemeGenerator';
 
 // Re-export hooks from @dheme/react
 export { useTheme, useThemeActions, useGenerateTheme, useDhemeClient } from '@dheme/react';

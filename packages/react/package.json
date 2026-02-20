@@ -1,6 +1,6 @@
 {
   "name": "@dheme/react",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "description": "React bindings for Dheme SDK with zero-FOUC theme application",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

@@ -141,15 +141,15 @@ export class DhemeClient {
     const url = `${this.config.baseUrl}${endpoint}`;
 
     // Configuração do request
-    const authHeader = this.config.apiKey ? { 'x-api-key': this.config.apiKey } : {};
+    const headers: Record<string, string> = { ...DEFAULT_HEADERS };
+    if (this.config.apiKey) {
+      headers['x-api-key'] = this.config.apiKey;
+    }
 
     let requestConfig: RequestConfig = {
       method,
       url,
-      headers: {
-        ...DEFAULT_HEADERS,
-        ...authHeader,
-      },
+      headers,
       body,
       timeout: this.config.timeout,
     };
