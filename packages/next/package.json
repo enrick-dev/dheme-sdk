@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@dheme/sdk": "^1.1.0",
-    "@dheme/react": "^2.5.0"
+    "@dheme/react": "^2.6.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

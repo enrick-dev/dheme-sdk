@@ -819,20 +819,6 @@ export function ThemeGenerator({
 
   return (
     <>
-      {/* Overlay for mobile */}
-      {isOpen && (
-        <div
-          onClick={() => setIsOpen(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.2)',
-            backdropFilter: 'blur(1px)',
-            zIndex: 40,
-          }}
-        />
-      )}
-
       {/* Fixed container */}
       <div
         className={cn(className)}
