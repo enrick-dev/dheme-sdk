@@ -23,12 +23,17 @@ export function DhemeProvider({
   baseUrl,
   persist = true,
   autoApply = true,
+  onGenerateTheme: customGenerateTheme,
   onThemeChange,
   onModeChange,
   onError,
   children,
 }: DhemeProviderProps): React.ReactElement {
   const client = useMemo(() => new DhemeClient({ apiKey, baseUrl }), [apiKey, baseUrl]);
+
+  // Ref for the custom generate function — avoids recreating generateTheme when the prop changes
+  const customGenerateThemeRef = useRef(customGenerateTheme);
+  customGenerateThemeRef.current = customGenerateTheme;
 
   const [theme, setTheme] = useState<GenerateThemeResponse | null>(null);
   const [mode, setModeState] = useState<ThemeMode>(() => {
@@ -83,6 +88,18 @@ export function DhemeProvider({
     }
   }, [theme, mode, autoApply]);
 
+  // Resolves theme data from either the custom function or the SDK client
+  const fetchTheme = useCallback(
+    async (params: GenerateThemeRequest): Promise<GenerateThemeResponse> => {
+      if (customGenerateThemeRef.current) {
+        return customGenerateThemeRef.current(params);
+      }
+      const response = await client.generateTheme(params);
+      return response.data;
+    },
+    [client]
+  );
+
   const generateTheme = useCallback(
     async (params: GenerateThemeRequest) => {
       // Cancel any in-flight background revalidation
@@ -92,8 +109,7 @@ export function DhemeProvider({
       setError(null);
 
       try {
-        const response = await client.generateTheme(params);
-        const data = response.data;
+        const data = await fetchTheme(params);
 
         setTheme(data);
         setIsReady(true);
@@ -117,7 +133,7 @@ export function DhemeProvider({
         setIsLoading(false);
       }
     },
-    [client]
+    [fetchTheme]
   );
 
   const clearTheme = useCallback(() => {
@@ -150,12 +166,10 @@ export function DhemeProvider({
       const controller = new AbortController();
       abortRef.current = controller;
 
-      client
-        .generateTheme(params)
-        .then((response) => {
+      fetchTheme(params)
+        .then((data) => {
           if (controller.signal.aborted) return;
 
-          const data = response.data;
           // Only update if colors actually changed
           const cachedLight = JSON.stringify(cached.colors.light);
           const freshLight = JSON.stringify(data.colors.light);

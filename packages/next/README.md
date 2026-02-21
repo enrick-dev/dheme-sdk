@@ -34,7 +34,8 @@ pnpm add @dheme/next @dheme/react @dheme/sdk
 
 ```tsx
 // app/layout.tsx (Server Component)
-import { DhemeScript, DhemeProvider } from '@dheme/next';
+import { DhemeScript } from '@dheme/next/server'; // Server Component — server path only
+import { DhemeProvider } from '@dheme/next';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -123,7 +124,8 @@ A floating FAB for real-time theme generation. Re-exported from `@dheme/react` w
 
 ```tsx
 // app/layout.tsx
-import { DhemeScript, DhemeProvider, ThemeGenerator } from '@dheme/next';
+import { DhemeScript } from '@dheme/next/server';
+import { DhemeProvider, ThemeGenerator } from '@dheme/next';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -298,7 +300,8 @@ DHEME_BASE_URL=http://localhost:3005
 ### `app/layout.tsx`
 
 ```tsx
-import { DhemeScript, DhemeProvider } from '@dheme/next';
+import { DhemeScript } from '@dheme/next/server';
+import { DhemeProvider } from '@dheme/next';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -411,10 +414,10 @@ Request →  DhemeScript (Server Component)    DhemeProvider (Client Component)
 All types are exported:
 
 ```typescript
+// Client types
 import type {
   DhemeProviderProps,
-  DhemeScriptProps,
-  GenerateThemeStylesOptions,
+  ThemeGeneratorProps,
   ThemeMode,
   ThemeDataState,
   ThemeActionsState,
@@ -423,6 +426,12 @@ import type {
   ColorTokens,
   HSLColor,
 } from '@dheme/next';
+
+// Server types
+import type {
+  DhemeScriptProps,
+  GenerateThemeStylesOptions,
+} from '@dheme/next/server';
 ```
 
 ## Related Packages

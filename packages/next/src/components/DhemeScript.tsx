@@ -1,6 +1,6 @@
 import React from 'react';
 import { DhemeClient } from '@dheme/sdk';
-import { themeToCSS, buildCacheKey, getNextBlockingScriptPayload } from '@dheme/react';
+import { themeToCSS, buildCacheKey, getNextBlockingScriptPayload } from '@dheme/react/utils';
 import { themeCache } from '../server/cache';
 import type { DhemeScriptProps } from '../types';
 
@@ -11,6 +11,7 @@ export async function DhemeScript({
   defaultMode = 'light',
   baseUrl,
   nonce,
+  onGenerateTheme,
 }: DhemeScriptProps): Promise<React.ReactElement> {
   const params = { theme, ...themeParams };
   const cacheKey = buildCacheKey(params);
@@ -19,9 +20,13 @@ export async function DhemeScript({
   let themeData = themeCache.get(cacheKey);
 
   if (!themeData) {
-    const client = new DhemeClient({ apiKey, baseUrl });
-    const response = await client.generateTheme(params);
-    themeData = response.data;
+    if (onGenerateTheme) {
+      themeData = await onGenerateTheme(params);
+    } else {
+      const client = new DhemeClient({ apiKey, baseUrl });
+      const response = await client.generateTheme(params);
+      themeData = response.data;
+    }
     themeCache.set(cacheKey, themeData);
   }
 

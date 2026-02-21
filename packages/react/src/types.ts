@@ -26,6 +26,22 @@ export interface DhemeProviderProps {
   baseUrl?: string;
   persist?: boolean;
   autoApply?: boolean;
+  /**
+   * Custom theme generation function. When provided, replaces the SDK client's
+   * generateTheme call entirely. Useful for internal use cases with custom endpoints.
+   *
+   * @example
+   * // Call an internal proxy route without API key:
+   * onGenerateTheme={async (params) => {
+   *   const res = await fetch('/api/generate-theme/proxy', {
+   *     method: 'POST',
+   *     headers: { 'Content-Type': 'application/json' },
+   *     body: JSON.stringify(params),
+   *   });
+   *   return res.json();
+   * }}
+   */
+  onGenerateTheme?: (params: GenerateThemeRequest) => Promise<GenerateThemeResponse>;
   onThemeChange?: (theme: GenerateThemeResponse) => void;
   onModeChange?: (mode: ThemeMode) => void;
   onError?: (error: Error) => void;

@@ -1,6 +1,5 @@
-// Next.js Components
+// Next.js Client Components
 export { DhemeProvider } from './components/DhemeProvider';
-export { DhemeScript } from './components/DhemeScript';
 export { ThemeGenerator } from './components/ThemeGenerator';
 export type { ThemeGeneratorProps } from './components/ThemeGenerator';
 
@@ -11,7 +10,7 @@ export { useTheme, useThemeActions, useGenerateTheme, useDhemeClient } from '@dh
 export { themeToCSS, applyThemeCSSVariables, buildCacheKey } from '@dheme/react';
 
 // Types
-export type { DhemeProviderProps, DhemeScriptProps, GenerateThemeStylesOptions } from './types';
+export type { DhemeProviderProps, GenerateThemeStylesOptions } from './types';
 export type { ThemeMode, ThemeDataState, ThemeActionsState } from '@dheme/react';
 export type {
   GenerateThemeRequest,

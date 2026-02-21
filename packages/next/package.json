@@ -1,6 +1,6 @@
 {
   "name": "@dheme/next",
-  "version": "1.2.0",
+  "version": "1.6.0",
   "description": "Next.js App Router bindings for Dheme SDK with server-side theme generation",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -23,8 +23,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup src/index.ts src/server.ts --format cjs,esm --dts --clean --external react --external react-dom --external next --external @dheme/sdk --external @dheme/react --tsconfig tsconfig.build.json",
-    "dev": "tsup src/index.ts src/server.ts --format cjs,esm --dts --watch --external react --external react-dom --external next --external @dheme/sdk --external @dheme/react",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src --ext .ts,.tsx",
@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@dheme/sdk": "^1.1.0",
-    "@dheme/react": "^2.0.0"
+    "@dheme/react": "^2.5.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
