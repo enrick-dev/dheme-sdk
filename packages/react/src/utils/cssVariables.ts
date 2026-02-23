@@ -3,7 +3,7 @@ import type { ThemeMode } from '../types';
 import { CSS_TOKEN_KEYS, TOKEN_TO_CSS_VAR } from '../constants';
 
 function formatHSL(color: HSLColor): string {
-  return `${color.h} ${color.s}% ${color.l}%`;
+  return `hsl(${color.h} ${color.s}% ${color.l}%)`;
 }
 
 export function themeToCSS(theme: GenerateThemeResponse, mode: ThemeMode): string {

@@ -3,6 +3,20 @@ import type { ThemeMode, DhemeProviderProps as ReactProviderProps } from '@dheme
 
 export interface DhemeProviderProps extends ReactProviderProps {
   cookieSync?: boolean;
+  /**
+   * URL of a proxy route that forwards theme requests server-side,
+   * keeping the API key out of the browser entirely.
+   *
+   * Set up the route with `createDhemeHandler` from `@dheme/next/server`:
+   * @example
+   * // app/api/dheme/route.ts
+   * import { createDhemeHandler } from '@dheme/next/server';
+   * export const { POST } = createDhemeHandler({ apiKey: process.env.DHEME_API_KEY! });
+   *
+   * // layout.tsx
+   * <DhemeProvider proxyUrl="/api/dheme" theme="..." />
+   */
+  proxyUrl?: string;
 }
 
 export interface DhemeScriptProps {

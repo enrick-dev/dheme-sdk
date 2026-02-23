@@ -45,6 +45,14 @@ export interface DhemeProviderProps {
   onThemeChange?: (theme: GenerateThemeResponse) => void;
   onModeChange?: (mode: ThemeMode) => void;
   onError?: (error: Error) => void;
+  /**
+   * Rendered instead of children while the initial theme is loading.
+   * Use this to prevent layout flash by showing a skeleton or spinner.
+   *
+   * Note: when using @dheme/next with DhemeScript, the theme is injected
+   * server-side — omit this prop in that case to avoid an unnecessary flash.
+   */
+  fallback?: React.ReactNode;
   children: React.ReactNode;
 }
 

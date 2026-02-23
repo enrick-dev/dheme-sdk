@@ -27,6 +27,7 @@ export function DhemeProvider({
   onThemeChange,
   onModeChange,
   onError,
+  fallback,
   children,
 }: DhemeProviderProps): React.ReactElement {
   const client = useMemo(() => new DhemeClient({ apiKey, baseUrl }), [apiKey, baseUrl]);
@@ -111,6 +112,15 @@ export function DhemeProvider({
       try {
         const data = await fetchTheme(params);
 
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[dheme] theme data received:', {
+            hasColors: !!data?.colors,
+            mode: modeRef.current,
+            colors: data?.colors?.[modeRef.current],
+            autoApply: autoApplyRef.current,
+          });
+        }
+
         setTheme(data);
         setIsReady(true);
 
@@ -127,6 +137,9 @@ export function DhemeProvider({
         onThemeChangeRef.current?.(data);
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[dheme] generateTheme failed:', error);
+        }
         setError(error);
         onErrorRef.current?.(error);
       } finally {
@@ -204,6 +217,10 @@ export function DhemeProvider({
   return React.createElement(
     ThemeDataContext.Provider,
     { value: themeDataValue },
-    React.createElement(ThemeActionsContext.Provider, { value: themeActionsValue }, children)
+    React.createElement(
+      ThemeActionsContext.Provider,
+      { value: themeActionsValue },
+      !isReady && fallback != null ? fallback : children
+    )
   );
 }

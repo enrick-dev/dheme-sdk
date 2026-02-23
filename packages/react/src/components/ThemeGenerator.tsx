@@ -717,26 +717,43 @@ export function ThemeGenerator({
   const debouncedRadius = useDebounce(localRadius[0], 200);
 
   // ── Debounced effects ──────────────────────────────────────────────────────
+  // isMountedRef prevents all effects from firing on the initial render.
+  // IMPORTANT: this ref must be declared BEFORE the effects so that on mount
+  // React runs each effect (they all bail out) and THEN sets isMountedRef.current
+  // = true in the last effect below.
+  const isMountedRef = useRef(false);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    if (!isMountedRef.current) return;
     generateTheme(paramsRef.current);
   }, [debouncedPrimary]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (isSecondaryEnabled) generateTheme(paramsRef.current);
+    if (!isMountedRef.current || !isSecondaryEnabled) return;
+    generateTheme(paramsRef.current);
   }, [debouncedSecondary]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    if (!isMountedRef.current) return;
     generateTheme(paramsRef.current);
   }, [debouncedSaturation]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    if (!isMountedRef.current) return;
     generateTheme(paramsRef.current);
   }, [debouncedLightness]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    if (!isMountedRef.current) return;
     generateTheme(paramsRef.current);
   }, [debouncedRadius]);
+
+  // Must come AFTER all debounced effects — React runs effects in declaration
+  // order, so on mount every effect above bails out before this sets the flag.
+  useEffect(() => {
+    isMountedRef.current = true;
+  }, []);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleEnableSecondary = () => {

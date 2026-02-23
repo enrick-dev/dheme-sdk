@@ -2,7 +2,7 @@
 
 import React, { useCallback, useRef } from 'react';
 import { DhemeProvider as ReactDhemeProvider } from '@dheme/react';
-import type { GenerateThemeResponse } from '@dheme/sdk';
+import type { GenerateThemeRequest, GenerateThemeResponse } from '@dheme/sdk';
 import type { ThemeMode } from '@dheme/react';
 import type { DhemeProviderProps } from '../types';
 
@@ -15,8 +15,10 @@ function setCookie(name: string, value: string): void {
 export function DhemeProvider({
   children,
   cookieSync = true,
+  proxyUrl,
   onThemeChange,
   onModeChange,
+  onGenerateTheme,
   theme: primaryColor,
   themeParams,
   ...props
@@ -48,11 +50,33 @@ export function DhemeProvider({
     [cookieSync, onModeChange]
   );
 
+  // Proxy: routes client-side theme requests through a local Next.js Route Handler
+  // so the real API key never reaches the browser.
+  const proxyGenerateTheme = useCallback(
+    async (params: GenerateThemeRequest): Promise<GenerateThemeResponse> => {
+      const res = await fetch(proxyUrl!, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? `Proxy request failed: ${res.status}`);
+      }
+      return res.json();
+    },
+    [proxyUrl]
+  );
+
+  // Priority: proxyUrl > onGenerateTheme > SDK client (uses apiKey directly)
+  const resolvedGenerateTheme = proxyUrl ? proxyGenerateTheme : onGenerateTheme;
+
   return React.createElement(ReactDhemeProvider, {
     ...props,
     theme: primaryColor,
     themeParams,
     persist: true,
+    onGenerateTheme: resolvedGenerateTheme,
     onThemeChange: handleThemeChange,
     onModeChange: handleModeChange,
     children,
