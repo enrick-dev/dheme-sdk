@@ -87,6 +87,7 @@ Fetches the theme on the server and renders inline `<style>` + `<script>` tags. 
     radius: 0.75,
     saturationAdjust: 10,
     borderIsColored: false,
+    tailwindVersion: 'v4', // 'v3' | 'v4' (default: 'v4')
   }}
   defaultMode="light" // 'light' | 'dark' (default: 'light')
   baseUrl="http://localhost:3005" // Override API URL (optional)
@@ -103,13 +104,15 @@ Fetches the theme on the server and renders inline `<style>` + `<script>` tags. 
 | `baseUrl`     | `string`                              | -         | Override API base URL.                |
 | `nonce`       | `string`                              | -         | CSP nonce for style and script tags.  |
 
-**What it renders:**
+> **`themeParams.tailwindVersion`** controls the CSS variable format in the inlined `<style>`. Use `'v3'` for `hsl(var(--token))` (Tailwind v3 / shadcn/ui) or `'v4'` (default) for `var(--token)` (Tailwind v4 / `@theme inline`). Must match the value used in `<DhemeProvider>`.
+
+**What it renders (Tailwind v4 — default):**
 
 ```html
 <!-- CSS for both modes — parsed before paint -->
 <style>
-  :root { --background:0 0% 100%; --primary:221.2 83.2% 53.3%; ... }
-  .dark { --background:222.2 84% 4.9%; --primary:217.2 91.2% 59.8%; ... }
+  :root { --background:hsl(0 0% 100%); --primary:hsl(221.2 83.2% 53.3%); ... }
+  .dark { --background:hsl(222.2 84% 4.9%); --primary:hsl(217.2 91.2% 59.8%); ... }
 </style>
 
 <!-- Mode detection — applies .dark class if needed -->
@@ -428,10 +431,7 @@ import type {
 } from '@dheme/next';
 
 // Server types
-import type {
-  DhemeScriptProps,
-  GenerateThemeStylesOptions,
-} from '@dheme/next/server';
+import type { DhemeScriptProps, GenerateThemeStylesOptions } from '@dheme/next/server';
 ```
 
 ## Related Packages

@@ -79,6 +79,7 @@ The main provider. Manages theme state, API calls, caching, and CSS variable app
     saturationAdjust: 10,
     secondaryColor: '#10b981',
     borderIsColored: false,
+    tailwindVersion: 'v4', // 'v3' | 'v4' (default: 'v4')
   }}
   defaultMode="light" // 'light' | 'dark' (default: 'light')
   persist={true} // Cache in localStorage (default: true)
@@ -103,6 +104,9 @@ The main provider. Manages theme state, API calls, caching, and CSS variable app
 | `onThemeChange` | `(theme: GenerateThemeResponse) => void` | -         | Called when theme data changes.             |
 | `onModeChange`  | `(mode: ThemeMode) => void`              | -         | Called when mode changes.                   |
 | `onError`       | `(error: Error) => void`                 | -         | Called on API errors.                       |
+| `fallback`      | `React.ReactNode`                        | -         | Shown while the theme is loading for the first time. |
+
+> **`themeParams.tailwindVersion`** controls the CSS variable format applied to `:root`. Use `'v3'` for projects that wrap variables with `hsl(var(--token))` (Tailwind v3 / shadcn/ui default), or `'v4'` (default) for projects that use `var(--token)` directly (Tailwind v4 / `@theme inline`).
 
 ### `<DhemeScript>`
 
@@ -259,7 +263,22 @@ The provider also syncs the `dark` class on `<html>` automatically.
 
 ## CSS Variables
 
-The provider sets 19 CSS variables + `--radius` on `:root`:
+The provider sets 19 CSS variables + `--radius` on `:root`. The value format depends on `themeParams.tailwindVersion`:
+
+**Tailwind v4** (default) — wrapped `hsl()`, use with `var(--token)`:
+
+```css
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(222.2 84% 4.9%);
+  --primary: hsl(221.2 83.2% 53.3%);
+  --primary-foreground: hsl(210 40% 98%);
+  /* ... 15 more tokens */
+  --radius: 0.5rem;
+}
+```
+
+**Tailwind v3** (`tailwindVersion: 'v3'`) — bare channels, use with `hsl(var(--token))`:
 
 ```css
 :root {
@@ -271,8 +290,6 @@ The provider sets 19 CSS variables + `--radius` on `:root`:
   --radius: 0.5rem;
 }
 ```
-
-Values are in shadcn/ui format (`h s% l%`), directly compatible with Tailwind CSS `hsl()` usage.
 
 ## ThemeGenerator
 
@@ -409,25 +426,31 @@ const [open, setOpen] = useState(false);
 
 ## Utilities
 
-### `themeToCSS(theme, mode)`
+### `themeToCSS(theme, mode, tailwindVersion?)`
 
 Convert a `GenerateThemeResponse` to a CSS variable assignment string.
 
 ```typescript
 import { themeToCSS } from '@dheme/react';
 
+// Tailwind v4 (default) — hsl() wrapped
 const css = themeToCSS(theme, 'light');
+// "--background:hsl(0 0% 100%);--foreground:hsl(222.2 84% 4.9%);..."
+
+// Tailwind v3 — bare channels
+const css = themeToCSS(theme, 'light', 'v3');
 // "--background:0 0% 100%;--foreground:222.2 84% 4.9%;..."
 ```
 
-### `applyThemeCSSVariables(theme, mode)`
+### `applyThemeCSSVariables(theme, mode, tailwindVersion?)`
 
 Manually apply CSS variables to `:root`.
 
 ```typescript
 import { applyThemeCSSVariables } from '@dheme/react';
 
-applyThemeCSSVariables(theme, 'dark');
+applyThemeCSSVariables(theme, 'dark');        // Tailwind v4 (default)
+applyThemeCSSVariables(theme, 'dark', 'v3'); // Tailwind v3
 ```
 
 ### `removeThemeCSSVariables()`

@@ -76,7 +76,7 @@ export function DhemeProvider({
   // Apply CSS vars when mode changes (no refetch needed)
   useEffect(() => {
     if (theme && autoApply) {
-      applyThemeCSSVariables(theme, mode);
+      applyThemeCSSVariables(theme, mode, themeParams?.tailwindVersion ?? 'v4');
     }
 
     // Sync dark class
@@ -125,7 +125,7 @@ export function DhemeProvider({
         setIsReady(true);
 
         if (autoApplyRef.current) {
-          applyThemeCSSVariables(data, modeRef.current);
+          applyThemeCSSVariables(data, modeRef.current, params.tailwindVersion ?? 'v4');
         }
 
         if (persistRef.current) {
@@ -173,7 +173,7 @@ export function DhemeProvider({
       // Serve from cache immediately
       setTheme(cached);
       setIsReady(true);
-      if (autoApply) applyThemeCSSVariables(cached, mode);
+      if (autoApply) applyThemeCSSVariables(cached, mode, params.tailwindVersion ?? 'v4');
 
       // Stale-while-revalidate in background
       const controller = new AbortController();
@@ -188,7 +188,8 @@ export function DhemeProvider({
           const freshLight = JSON.stringify(data.colors.light);
           if (cachedLight !== freshLight) {
             setTheme(data);
-            if (autoApply) applyThemeCSSVariables(data, modeRef.current);
+            if (autoApply)
+              applyThemeCSSVariables(data, modeRef.current, params.tailwindVersion ?? 'v4');
             saveThemeToCache(cacheKey, data);
             onThemeChangeRef.current?.(data);
           }

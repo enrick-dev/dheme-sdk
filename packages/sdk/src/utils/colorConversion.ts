@@ -119,10 +119,17 @@ export function rgbToHSL(rgb: RGBColor): HSLColor {
 }
 
 /**
- * Formata HSL para string CSS (ex: "221.2 83.2% 53.3%")
+ * Formata HSL para string CSS.
+ *
+ * @param tailwindVersion
+ *   - `'v4'` (default): `hsl(221.2 83.2% 53.3%)` — valor de cor CSS válido;
+ *     usar com `var(--token)` direto (Tailwind v4 / `@theme`)
+ *   - `'v3'`: `221.2 83.2% 53.3%` — bare channels;
+ *     usar com `hsl(var(--token))` (Tailwind v3 / shadcn/ui padrão)
  */
-export function formatHSLString(hsl: HSLColor): string {
-  return `${hsl.h} ${hsl.s}% ${hsl.l}%`;
+export function formatHSLString(hsl: HSLColor, tailwindVersion: 'v3' | 'v4' = 'v4'): string {
+  const bare = `${hsl.h} ${hsl.s}% ${hsl.l}%`;
+  return tailwindVersion === 'v3' ? bare : `hsl(${bare})`;
 }
 
 /**

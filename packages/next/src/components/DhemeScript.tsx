@@ -32,8 +32,9 @@ export async function DhemeScript({
   }
 
   // Generate CSS for both modes
-  const lightCSS = themeToCSS(themeData, 'light');
-  const darkCSS = themeToCSS(themeData, 'dark');
+  const tailwindVersion = params.tailwindVersion ?? 'v4';
+  const lightCSS = themeToCSS(themeData, 'light', tailwindVersion);
+  const darkCSS = themeToCSS(themeData, 'dark', tailwindVersion);
   const styleContent = `:root{${lightCSS}}.dark{${darkCSS}}`;
 
   // Blocking script for mode detection

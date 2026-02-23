@@ -1,6 +1,6 @@
 {
   "name": "@dheme/next",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Next.js App Router bindings for Dheme SDK with server-side theme generation",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@dheme/sdk": "^1.1.0",
-    "@dheme/react": "^2.11.0"
+    "@dheme/react": "^2.12.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

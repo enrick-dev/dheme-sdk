@@ -214,6 +214,7 @@ interface GenerateThemeRequest {
   borderIsColored?: boolean; // default false
   format?: 'object' | 'css' | 'tokens'; // default 'object'
   template?: string; // Custom template slug
+  tailwindVersion?: 'v3' | 'v4'; // default 'v4'. CSS variable format for React/Next bindings
 }
 ```
 
@@ -230,6 +231,7 @@ interface GenerateThemeRequest {
 | `borderIsColored`     | `boolean` | No       | -                               | If `true`, borders get a primary color tint.       |
 | `format`              | `string`  | No       | `"object"`, `"css"`, `"tokens"` | Response format (default: `"object"`).             |
 | `template`            | `string`  | No       | -                               | Template slug for custom key remapping.            |
+| `tailwindVersion`     | `string`  | No       | `"v3"`, `"v4"`                  | CSS variable format used by React/Next bindings (default: `"v4"`). |
 
 ### The `format` Parameter
 
@@ -557,8 +559,12 @@ rgbToHSL({ r: 59, g: 130, b: 246 }); // { h: 221.2, s: 83.2, l: 53.3 }
 ### Formatting
 
 ```typescript
-// HSL object → CSS string (shadcn format)
+// Tailwind v4 (default) — wrapped hsl(), use with var(--token) directly
 formatHSLString({ h: 221.2, s: 83.2, l: 53.3 });
+// 'hsl(221.2 83.2% 53.3%)'
+
+// Tailwind v3 — bare channels, use with hsl(var(--token))
+formatHSLString({ h: 221.2, s: 83.2, l: 53.3 }, 'v3');
 // '221.2 83.2% 53.3%'
 ```
 

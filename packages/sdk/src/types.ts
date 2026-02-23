@@ -81,6 +81,13 @@ export interface GenerateThemeRequest {
   borderIsColored?: boolean;
   /** Formato de resposta (opcional, default: 'object') */
   format?: 'object' | 'css' | 'tokens';
+  /**
+   * Versão do Tailwind CSS para o formato das variáveis CSS (opcional, default: 'v4').
+   * Só se aplica quando `format='css'` ou ao usar `generateCSS()`.
+   * - `'v4'` (default): `hsl(H S% L%)` — usar com `var(--token)` direto no config
+   * - `'v3'`: `H S% L%` bare — usar com `hsl(var(--token))` no config
+   */
+  tailwindVersion?: 'v3' | 'v4';
   /** Template customizado para mapeamento de keys (opcional) */
   template?: string;
 }
