@@ -597,9 +597,11 @@ function cn(...classes: (string | boolean | undefined | null)[]) {
 export interface ThemeGeneratorProps {
   defaultTheme?: string;
   defaultSecondaryColor?: string;
+  defaultSecondaryEnabled?: boolean;
   defaultSaturation?: number;
   defaultLightness?: number;
   defaultRadius?: number;
+  defaultBackgroundIsColored?: boolean;
   position?: 'bottom-right' | 'bottom-left';
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -629,9 +631,11 @@ export interface ThemeGeneratorProps {
 export function ThemeGenerator({
   defaultTheme = '#4332f6',
   defaultSecondaryColor = '#ab67f1',
+  defaultSecondaryEnabled = false,
   defaultSaturation = 10,
   defaultLightness = 2,
   defaultRadius = 0,
+  defaultBackgroundIsColored = false,
   position = 'bottom-right',
   open: controlledOpen,
   onOpenChange,
@@ -675,12 +679,14 @@ export function ThemeGenerator({
   // ── Local state (source of truth for controls) ─────────────────────────────
   const [localPrimary, setLocalPrimary] = useState(defaultTheme);
   const [localSecondary, setLocalSecondary] = useState(defaultSecondaryColor);
-  const [isSecondaryEnabled, setIsSecondaryEnabled] = useState(false);
+  const [isSecondaryEnabled, setIsSecondaryEnabled] = useState(defaultSecondaryEnabled);
   const [localSaturation, setLocalSaturation] = useState([defaultSaturation]);
   const [localLightness, setLocalLightness] = useState([defaultLightness]);
   const [localRadius, setLocalRadius] = useState([defaultRadius]);
   const [localCardIsColored, setLocalCardIsColored] = useState(false);
-  const [localBackgroundIsColored, setLocalBackgroundIsColored] = useState(false);
+  const [localBackgroundIsColored, setLocalBackgroundIsColored] = useState(
+    defaultBackgroundIsColored
+  );
   const [localBorderIsColored, setLocalBorderIsColored] = useState(false);
 
   // ── paramsRef — always-fresh params, avoids stale closure in debounce effects
@@ -782,17 +788,18 @@ export function ThemeGenerator({
     setLocalSaturation([defaultSaturation]);
     setLocalLightness([defaultLightness]);
     setLocalRadius([defaultRadius]);
-    setIsSecondaryEnabled(false);
+    setIsSecondaryEnabled(defaultSecondaryEnabled);
     setLocalCardIsColored(false);
-    setLocalBackgroundIsColored(false);
+    setLocalBackgroundIsColored(defaultBackgroundIsColored);
     setLocalBorderIsColored(false);
     generateTheme({
       theme: defaultTheme,
+      secondaryColor: defaultSecondaryEnabled ? defaultSecondaryColor : undefined,
       saturationAdjust: defaultSaturation,
       lightnessAdjust: defaultLightness,
       radius: defaultRadius,
       cardIsColored: false,
-      backgroundIsColored: false,
+      backgroundIsColored: defaultBackgroundIsColored,
       borderIsColored: false,
     });
   };

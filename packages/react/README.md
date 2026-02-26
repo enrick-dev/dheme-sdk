@@ -314,15 +314,17 @@ The component renders as a pill in the corner of the screen. Clicking it expands
 
 ```tsx
 <ThemeGenerator
-  defaultTheme="#4332f6"           // Initial primary color
-  defaultSecondaryColor="#ab67f1"  // Initial secondary color
-  defaultSaturation={10}           // Initial saturation adjust (-100 to 100)
-  defaultLightness={2}             // Initial lightness adjust (-100 to 100)
-  defaultRadius={0}                // Initial border radius (0 to 2 rem)
-  position="bottom-right"          // 'bottom-right' | 'bottom-left'
-  open={isOpen}                    // Controlled open state (optional)
-  onOpenChange={setIsOpen}         // Controlled open callback (optional)
-  labels={{                        // i18n overrides (all optional)
+  defaultTheme="#4332f6"              // Initial primary color
+  defaultSecondaryColor="#ab67f1"     // Initial secondary color
+  defaultSecondaryEnabled={false}     // Whether secondary starts enabled
+  defaultSaturation={10}              // Initial saturation adjust (-100 to 100)
+  defaultLightness={2}                // Initial lightness adjust (-100 to 100)
+  defaultRadius={0}                   // Initial border radius (0 to 2 rem)
+  defaultBackgroundIsColored={false}  // Initial colorful background toggle
+  position="bottom-right"             // 'bottom-right' | 'bottom-left'
+  open={isOpen}                       // Controlled open state (optional)
+  onOpenChange={setIsOpen}            // Controlled open callback (optional)
+  labels={{                           // i18n overrides (all optional)
     title: 'Theme Generator',
     primary: 'Primary Color',
     secondary: 'Secondary Color',
@@ -330,7 +332,7 @@ The component renders as a pill in the corner of the screen. Clicking it expands
     lightness: 'Brightness',
     reset: 'Restore defaults',
   }}
-  className="my-fab"               // Extra class on the container (optional)
+  className="my-fab"                  // Extra class on the container (optional)
 />
 ```
 
@@ -338,9 +340,11 @@ The component renders as a pill in the corner of the screen. Clicking it expands
 | --- | --- | --- | --- |
 | `defaultTheme` | `string` | `'#4332f6'` | Initial primary HEX color. |
 | `defaultSecondaryColor` | `string` | `'#ab67f1'` | Initial secondary HEX color. |
+| `defaultSecondaryEnabled` | `boolean` | `false` | Whether secondary color starts enabled. |
 | `defaultSaturation` | `number` | `10` | Initial saturation adjust (-100–100). |
 | `defaultLightness` | `number` | `2` | Initial lightness adjust (-100–100). |
 | `defaultRadius` | `number` | `0` | Initial border radius (0–2 rem). |
+| `defaultBackgroundIsColored` | `boolean` | `false` | Initial state of the colorful background toggle. |
 | `position` | `'bottom-right' \| 'bottom-left'` | `'bottom-right'` | Corner to anchor the FAB. |
 | `open` | `boolean` | — | Controlled open state. Omit for uncontrolled. |
 | `onOpenChange` | `(open: boolean) => void` | — | Called when open state changes. |
