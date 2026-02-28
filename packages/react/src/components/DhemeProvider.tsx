@@ -6,6 +6,7 @@ import { ThemeDataContext } from '../contexts/ThemeDataContext';
 import { ThemeActionsContext } from '../contexts/ThemeActionsContext';
 import { applyThemeCSSVariables, removeThemeCSSVariables } from '../utils/cssVariables';
 import { buildCacheKey } from '../utils/cacheKey';
+import { DhemeLoadingOverlay } from './DhemeLoadingOverlay';
 import {
   saveThemeToCache,
   loadThemeFromCache,
@@ -27,7 +28,7 @@ export function DhemeProvider({
   onThemeChange,
   onModeChange,
   onError,
-  fallback,
+  loadingContent,
   children,
 }: DhemeProviderProps): React.ReactElement {
   const client = useMemo(() => new DhemeClient({ apiKey, baseUrl }), [apiKey, baseUrl]);
@@ -41,7 +42,12 @@ export function DhemeProvider({
     if (typeof window === 'undefined') return defaultMode;
     return loadMode() || defaultMode;
   });
-  const [isReady, setIsReady] = useState(false);
+  // If CSS vars are already present (DhemeScript SSR or client blocking script),
+  // initialize as ready to skip the loading screen entirely.
+  const [isReady, setIsReady] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() !== '';
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -221,7 +227,9 @@ export function DhemeProvider({
     React.createElement(
       ThemeActionsContext.Provider,
       { value: themeActionsValue },
-      !isReady && fallback != null ? fallback : children
+      !isReady
+        ? React.createElement(DhemeLoadingOverlay, null, loadingContent ?? undefined)
+        : children
     )
   );
 }

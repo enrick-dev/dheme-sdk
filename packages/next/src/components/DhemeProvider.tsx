@@ -7,6 +7,7 @@ import type { ThemeMode } from '@dheme/react';
 import type { DhemeProviderProps } from '../types';
 
 const COOKIE_MAX_AGE = 31_536_000; // 1 year
+const DEFAULT_PROXY_URL = '/api/dheme';
 
 function setCookie(name: string, value: string): void {
   document.cookie = `${name}=${value};path=/;max-age=${COOKIE_MAX_AGE};SameSite=Lax`;
@@ -50,11 +51,15 @@ export function DhemeProvider({
     [cookieSync, onModeChange]
   );
 
+  // Default to /api/dheme when no apiKey or custom function is provided
+  const effectiveProxyUrl =
+    proxyUrl ?? (props.apiKey || onGenerateTheme ? undefined : DEFAULT_PROXY_URL);
+
   // Proxy: routes client-side theme requests through a local Next.js Route Handler
   // so the real API key never reaches the browser.
   const proxyGenerateTheme = useCallback(
     async (params: GenerateThemeRequest): Promise<GenerateThemeResponse> => {
-      const res = await fetch(proxyUrl!, {
+      const res = await fetch(effectiveProxyUrl!, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
@@ -65,11 +70,11 @@ export function DhemeProvider({
       }
       return res.json();
     },
-    [proxyUrl]
+    [effectiveProxyUrl]
   );
 
-  // Priority: proxyUrl > onGenerateTheme > SDK client (uses apiKey directly)
-  const resolvedGenerateTheme = proxyUrl ? proxyGenerateTheme : onGenerateTheme;
+  // Priority: effectiveProxyUrl > onGenerateTheme > SDK client (uses apiKey directly)
+  const resolvedGenerateTheme = effectiveProxyUrl ? proxyGenerateTheme : onGenerateTheme;
 
   return React.createElement(ReactDhemeProvider, {
     ...props,

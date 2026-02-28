@@ -218,19 +218,19 @@ interface GenerateThemeRequest {
 }
 ```
 
-| Parameter             | Type      | Required | Range                           | Description                                        |
-| --------------------- | --------- | -------- | ------------------------------- | -------------------------------------------------- |
-| `theme`               | `string`  | Yes      | Valid HEX                       | Primary color that drives the entire palette.      |
-| `secondaryColor`      | `string`  | No       | Valid HEX                       | Secondary/accent color. Auto-generated if omitted. |
-| `radius`              | `number`  | No       | `0`–`2`                         | Border radius for UI components (rem).             |
-| `saturationAdjust`    | `number`  | No       | `-100`–`100`                    | Increase or decrease overall saturation.           |
-| `lightnessAdjust`     | `number`  | No       | `-100`–`100`                    | Increase or decrease overall lightness.            |
-| `contrastAdjust`      | `number`  | No       | `-100`–`100`                    | Increase or decrease contrast between surfaces.    |
-| `cardIsColored`       | `boolean` | No       | -                               | If `true`, card backgrounds get a subtle tint.     |
-| `backgroundIsColored` | `boolean` | No       | -                               | If `false`, backgrounds are pure white/black.      |
-| `borderIsColored`     | `boolean` | No       | -                               | If `true`, borders get a primary color tint.       |
-| `format`              | `string`  | No       | `"object"`, `"css"`, `"tokens"` | Response format (default: `"object"`).             |
-| `template`            | `string`  | No       | -                               | Template slug for custom key remapping.            |
+| Parameter             | Type      | Required | Range                           | Description                                                        |
+| --------------------- | --------- | -------- | ------------------------------- | ------------------------------------------------------------------ |
+| `theme`               | `string`  | Yes      | Valid HEX                       | Primary color that drives the entire palette.                      |
+| `secondaryColor`      | `string`  | No       | Valid HEX                       | Secondary/accent color. Auto-generated if omitted.                 |
+| `radius`              | `number`  | No       | `0`–`2`                         | Border radius for UI components (rem).                             |
+| `saturationAdjust`    | `number`  | No       | `-100`–`100`                    | Increase or decrease overall saturation.                           |
+| `lightnessAdjust`     | `number`  | No       | `-100`–`100`                    | Increase or decrease overall lightness.                            |
+| `contrastAdjust`      | `number`  | No       | `-100`–`100`                    | Increase or decrease contrast between surfaces.                    |
+| `cardIsColored`       | `boolean` | No       | -                               | If `true`, card backgrounds get a subtle tint.                     |
+| `backgroundIsColored` | `boolean` | No       | -                               | If `false`, backgrounds are pure white/black.                      |
+| `borderIsColored`     | `boolean` | No       | -                               | If `true`, borders get a primary color tint.                       |
+| `format`              | `string`  | No       | `"object"`, `"css"`, `"tokens"` | Response format (default: `"object"`).                             |
+| `template`            | `string`  | No       | -                               | Template slug for custom key remapping.                            |
 | `tailwindVersion`     | `string`  | No       | `"v3"`, `"v4"`                  | CSS variable format used by React/Next bindings (default: `"v4"`). |
 
 ### The `format` Parameter

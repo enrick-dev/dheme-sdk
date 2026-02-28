@@ -92,18 +92,18 @@ The main provider. Manages theme state, API calls, caching, and CSS variable app
 </DhemeProvider>
 ```
 
-| Prop            | Type                                     | Default   | Description                                 |
-| --------------- | ---------------------------------------- | --------- | ------------------------------------------- |
-| `apiKey`        | `string`                                 | -         | **Required.** Your Dheme API key.           |
-| `theme`         | `string`                                 | -         | Primary HEX color. Auto-generates on mount. |
-| `themeParams`   | `Omit<GenerateThemeRequest, 'theme'>`    | -         | Additional generation parameters.           |
-| `defaultMode`   | `'light' \| 'dark'`                      | `'light'` | Initial color mode.                         |
-| `baseUrl`       | `string`                                 | -         | Override API base URL.                      |
-| `persist`       | `boolean`                                | `true`    | Cache theme in localStorage.                |
-| `autoApply`     | `boolean`                                | `true`    | Apply CSS variables to `:root`.             |
-| `onThemeChange` | `(theme: GenerateThemeResponse) => void` | -         | Called when theme data changes.             |
-| `onModeChange`  | `(mode: ThemeMode) => void`              | -         | Called when mode changes.                   |
-| `onError`       | `(error: Error) => void`                 | -         | Called on API errors.                       |
+| Prop            | Type                                     | Default   | Description                                          |
+| --------------- | ---------------------------------------- | --------- | ---------------------------------------------------- |
+| `apiKey`        | `string`                                 | -         | **Required.** Your Dheme API key.                    |
+| `theme`         | `string`                                 | -         | Primary HEX color. Auto-generates on mount.          |
+| `themeParams`   | `Omit<GenerateThemeRequest, 'theme'>`    | -         | Additional generation parameters.                    |
+| `defaultMode`   | `'light' \| 'dark'`                      | `'light'` | Initial color mode.                                  |
+| `baseUrl`       | `string`                                 | -         | Override API base URL.                               |
+| `persist`       | `boolean`                                | `true`    | Cache theme in localStorage.                         |
+| `autoApply`     | `boolean`                                | `true`    | Apply CSS variables to `:root`.                      |
+| `onThemeChange` | `(theme: GenerateThemeResponse) => void` | -         | Called when theme data changes.                      |
+| `onModeChange`  | `(mode: ThemeMode) => void`              | -         | Called when mode changes.                            |
+| `onError`       | `(error: Error) => void`                 | -         | Called on API errors.                                |
 | `fallback`      | `React.ReactNode`                        | -         | Shown while the theme is loading for the first time. |
 
 > **`themeParams.tailwindVersion`** controls the CSS variable format applied to `:root`. Use `'v3'` for projects that wrap variables with `hsl(var(--token))` (Tailwind v3 / shadcn/ui default), or `'v4'` (default) for projects that use `var(--token)` directly (Tailwind v4 / `@theme inline`).
@@ -314,17 +314,18 @@ The component renders as a pill in the corner of the screen. Clicking it expands
 
 ```tsx
 <ThemeGenerator
-  defaultTheme="#4332f6"              // Initial primary color
-  defaultSecondaryColor="#ab67f1"     // Initial secondary color
-  defaultSecondaryEnabled={false}     // Whether secondary starts enabled
-  defaultSaturation={10}              // Initial saturation adjust (-100 to 100)
-  defaultLightness={2}                // Initial lightness adjust (-100 to 100)
-  defaultRadius={0}                   // Initial border radius (0 to 2 rem)
-  defaultBackgroundIsColored={false}  // Initial colorful background toggle
-  position="bottom-right"             // 'bottom-right' | 'bottom-left'
-  open={isOpen}                       // Controlled open state (optional)
-  onOpenChange={setIsOpen}            // Controlled open callback (optional)
-  labels={{                           // i18n overrides (all optional)
+  defaultTheme="#4332f6" // Initial primary color
+  defaultSecondaryColor="#ab67f1" // Initial secondary color
+  defaultSecondaryEnabled={false} // Whether secondary starts enabled
+  defaultSaturation={10} // Initial saturation adjust (-100 to 100)
+  defaultLightness={2} // Initial lightness adjust (-100 to 100)
+  defaultRadius={0} // Initial border radius (0 to 2 rem)
+  defaultBackgroundIsColored={false} // Initial colorful background toggle
+  position="bottom-right" // 'bottom-right' | 'bottom-left'
+  open={isOpen} // Controlled open state (optional)
+  onOpenChange={setIsOpen} // Controlled open callback (optional)
+  labels={{
+    // i18n overrides (all optional)
     title: 'Theme Generator',
     primary: 'Primary Color',
     secondary: 'Secondary Color',
@@ -332,45 +333,45 @@ The component renders as a pill in the corner of the screen. Clicking it expands
     lightness: 'Brightness',
     reset: 'Restore defaults',
   }}
-  className="my-fab"                  // Extra class on the container (optional)
+  className="my-fab" // Extra class on the container (optional)
 />
 ```
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `defaultTheme` | `string` | `'#4332f6'` | Initial primary HEX color. |
-| `defaultSecondaryColor` | `string` | `'#ab67f1'` | Initial secondary HEX color. |
-| `defaultSecondaryEnabled` | `boolean` | `false` | Whether secondary color starts enabled. |
-| `defaultSaturation` | `number` | `10` | Initial saturation adjust (-100–100). |
-| `defaultLightness` | `number` | `2` | Initial lightness adjust (-100–100). |
-| `defaultRadius` | `number` | `0` | Initial border radius (0–2 rem). |
-| `defaultBackgroundIsColored` | `boolean` | `false` | Initial state of the colorful background toggle. |
-| `position` | `'bottom-right' \| 'bottom-left'` | `'bottom-right'` | Corner to anchor the FAB. |
-| `open` | `boolean` | — | Controlled open state. Omit for uncontrolled. |
-| `onOpenChange` | `(open: boolean) => void` | — | Called when open state changes. |
-| `labels` | `ThemeGeneratorLabels` | See below | Override any UI text for i18n. |
-| `className` | `string` | — | Extra CSS class on the fixed container. |
+| Prop                         | Type                              | Default          | Description                                      |
+| ---------------------------- | --------------------------------- | ---------------- | ------------------------------------------------ |
+| `defaultTheme`               | `string`                          | `'#4332f6'`      | Initial primary HEX color.                       |
+| `defaultSecondaryColor`      | `string`                          | `'#ab67f1'`      | Initial secondary HEX color.                     |
+| `defaultSecondaryEnabled`    | `boolean`                         | `false`          | Whether secondary color starts enabled.          |
+| `defaultSaturation`          | `number`                          | `10`             | Initial saturation adjust (-100–100).            |
+| `defaultLightness`           | `number`                          | `2`              | Initial lightness adjust (-100–100).             |
+| `defaultRadius`              | `number`                          | `0`              | Initial border radius (0–2 rem).                 |
+| `defaultBackgroundIsColored` | `boolean`                         | `false`          | Initial state of the colorful background toggle. |
+| `position`                   | `'bottom-right' \| 'bottom-left'` | `'bottom-right'` | Corner to anchor the FAB.                        |
+| `open`                       | `boolean`                         | —                | Controlled open state. Omit for uncontrolled.    |
+| `onOpenChange`               | `(open: boolean) => void`         | —                | Called when open state changes.                  |
+| `labels`                     | `ThemeGeneratorLabels`            | See below        | Override any UI text for i18n.                   |
+| `className`                  | `string`                          | —                | Extra CSS class on the fixed container.          |
 
 #### Default labels
 
-| Key | Default |
-| --- | --- |
-| `title` | `'Theme Generator'` |
-| `description` | `'Generate complete themes from a single color. Changes apply in real time.'` |
-| `baseColors` | `'Base Colors'` |
-| `primary` | `'Primary'` |
-| `secondary` | `'Secondary'` |
-| `optional` | `'Optional'` |
-| `fineTuning` | `'Fine Tuning'` |
-| `saturation` | `'Saturation'` |
-| `lightness` | `'Lightness'` |
-| `borderRadius` | `'Border Radius'` |
-| `advancedOptions` | `'Advanced Options'` |
-| `colorfulCard` | `'Colorful Card'` |
-| `colorfulBackground` | `'Colorful Background'` |
-| `colorfulBorder` | `'Colorful Border'` |
-| `reset` | `'Reset'` |
-| `fabPrimaryLabel` | `'Primary'` |
+| Key                  | Default                                                                       |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `title`              | `'Theme Generator'`                                                           |
+| `description`        | `'Generate complete themes from a single color. Changes apply in real time.'` |
+| `baseColors`         | `'Base Colors'`                                                               |
+| `primary`            | `'Primary'`                                                                   |
+| `secondary`          | `'Secondary'`                                                                 |
+| `optional`           | `'Optional'`                                                                  |
+| `fineTuning`         | `'Fine Tuning'`                                                               |
+| `saturation`         | `'Saturation'`                                                                |
+| `lightness`          | `'Lightness'`                                                                 |
+| `borderRadius`       | `'Border Radius'`                                                             |
+| `advancedOptions`    | `'Advanced Options'`                                                          |
+| `colorfulCard`       | `'Colorful Card'`                                                             |
+| `colorfulBackground` | `'Colorful Background'`                                                       |
+| `colorfulBorder`     | `'Colorful Border'`                                                           |
+| `reset`              | `'Reset'`                                                                     |
+| `fabPrimaryLabel`    | `'Primary'`                                                                   |
 
 ### How it works
 
@@ -378,12 +379,12 @@ The component renders as a pill in the corner of the screen. Clicking it expands
 
 Each parameter has its own debounce timer. Dragging the saturation slider fires an API call 200ms after the user stops — not on every frame. Color pickers debounce at 150ms.
 
-| Control | Debounce |
-| --- | --- |
-| Color pickers | 150ms |
-| Sliders (saturation, lightness, radius) | 200ms |
+| Control                                    | Debounce                 |
+| ------------------------------------------ | ------------------------ |
+| Color pickers                              | 150ms                    |
+| Sliders (saturation, lightness, radius)    | 200ms                    |
 | Boolean toggles (card, background, border) | None — fires immediately |
-| Secondary color enable/disable | None — fires immediately |
+| Secondary color enable/disable             | None — fires immediately |
 
 **No re-render loops**
 
@@ -453,7 +454,7 @@ Manually apply CSS variables to `:root`.
 ```typescript
 import { applyThemeCSSVariables } from '@dheme/react';
 
-applyThemeCSSVariables(theme, 'dark');        // Tailwind v4 (default)
+applyThemeCSSVariables(theme, 'dark'); // Tailwind v4 (default)
 applyThemeCSSVariables(theme, 'dark', 'v3'); // Tailwind v3
 ```
 

@@ -46,13 +46,16 @@ export interface DhemeProviderProps {
   onModeChange?: (mode: ThemeMode) => void;
   onError?: (error: Error) => void;
   /**
-   * Rendered instead of children while the initial theme is loading.
-   * Use this to prevent layout flash by showing a skeleton or spinner.
+   * Content rendered inside the loading wrapper while the initial theme is fetched.
+   * The wrapper (full-screen centering) is always rendered by the lib — only the
+   * inner content can be customized.
    *
-   * Note: when using @dheme/next with DhemeScript, the theme is injected
-   * server-side — omit this prop in that case to avoid an unnecessary flash.
+   * Defaults to a built-in spinner. Pass any React node to replace it:
+   *
+   * @example
+   * <DhemeProvider loadingContent={<CompanySpinner />} theme="..." />
    */
-  fallback?: React.ReactNode;
+  loadingContent?: React.ReactNode;
   children: React.ReactNode;
 }
 
