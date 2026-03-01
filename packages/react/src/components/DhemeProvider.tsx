@@ -37,16 +37,36 @@ export function DhemeProvider({
   const customGenerateThemeRef = useRef(customGenerateTheme);
   customGenerateThemeRef.current = customGenerateTheme;
 
-  const [theme, setTheme] = useState<GenerateThemeResponse | null>(null);
+  const [theme, setTheme] = useState<GenerateThemeResponse | null>(() => {
+    if (typeof window === 'undefined' || !persist || !primaryColor) return null;
+    // If blocking script already applied CSS vars, leave theme null here;
+    // the useEffect will populate it and kick off background revalidation.
+    if (getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() !== '') return null;
+    const params: GenerateThemeRequest = { theme: primaryColor, ...themeParams };
+    return loadThemeFromCache(buildCacheKey(params));
+  });
   const [mode, setModeState] = useState<ThemeMode>(() => {
     if (typeof window === 'undefined') return defaultMode;
     return loadMode() || defaultMode;
   });
   // If CSS vars are already present (DhemeScript SSR or client blocking script),
   // initialize as ready to skip the loading screen entirely.
+  // Otherwise, if there is a cache hit, apply CSS vars synchronously before the
+  // first paint so children render with the correct theme immediately.
   const [isReady, setIsReady] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() !== '';
+    // Case 1: blocking script already applied CSS vars — trust the DOM.
+    if (getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() !== '') return true;
+    // Case 2: no blocking script, but cache exists — apply synchronously to prevent FOUC.
+    if (!persist || !primaryColor) return false;
+    const params: GenerateThemeRequest = { theme: primaryColor, ...themeParams };
+    const cached = loadThemeFromCache(buildCacheKey(params));
+    if (!cached) return false;
+    const resolvedMode: ThemeMode = loadMode() ?? defaultMode;
+    if (autoApply) applyThemeCSSVariables(cached, resolvedMode, themeParams?.tailwindVersion ?? 'v4');
+    if (resolvedMode === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+    return true;
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -176,10 +196,12 @@ export function DhemeProvider({
     const cached = persist ? loadThemeFromCache(cacheKey) : null;
 
     if (cached) {
-      // Serve from cache immediately
-      setTheme(cached);
-      setIsReady(true);
-      if (autoApply) applyThemeCSSVariables(cached, mode, params.tailwindVersion ?? 'v4');
+      // Only update state if theme wasn't already pre-loaded in the useState initializer
+      if (!theme) {
+        setTheme(cached);
+        setIsReady(true);
+        if (autoApply) applyThemeCSSVariables(cached, mode, params.tailwindVersion ?? 'v4');
+      }
 
       // Stale-while-revalidate in background
       const controller = new AbortController();

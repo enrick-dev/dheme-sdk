@@ -1,6 +1,6 @@
 # @dheme/react
 
-React bindings for the [Dheme](https://dheme.com) Theme Generator API. Apply production-ready themes to your React app with a single provider — zero FOUC on cached visits.
+React bindings for the [Dheme](https://dheme.com) Theme Generator API. Apply production-ready themes to your React app with a single provider — zero FOUC on any visit after the first.
 
 Built for **React SPAs** (Vite, CRA, Remix SPA mode). For **Next.js App Router**, use [`@dheme/next`](https://www.npmjs.com/package/@dheme/next) instead.
 
@@ -57,11 +57,24 @@ That's it. Your app now has 19 CSS variables applied to `:root` — fully compat
 
 ### Subsequent visits (cached — zero FOUC)
 
-1. `<DhemeScript>` runs a blocking `<script>` **before React mounts**
-2. The script reads the cached theme from `localStorage` and applies CSS variables immediately
-3. React mounts, `DhemeProvider` serves the cached theme and revalidates in background
+The provider applies the cached theme **synchronously during React's first render** — before the browser paints. No loading overlay is shown:
 
-The blocking script is ~800 bytes and runs synchronously, ensuring the page never flashes without styles.
+1. React mounts, `DhemeProvider` reads `localStorage` and applies CSS variables immediately in its `useState` initializer
+2. `isReady` starts as `true`, children render with the correct theme from the first paint
+3. A background API request revalidates the cache without blocking anything
+
+### Adding `<DhemeScript>` for first-visit FOUC prevention
+
+For apps that want zero FOUC even on the very first visit (before the cache is populated), add `<DhemeScript>` to your document `<head>`. It injects a tiny ~800-byte blocking script that runs before React loads:
+
+```tsx
+// index.html / _document.tsx
+<head>
+  <DhemeScript defaultMode="dark" />
+</head>
+```
+
+Without it, the first visit shows a loading overlay while the API call completes. With it, no overlay is shown even on the first visit (if there is a cache from a previous visit in the same browser).
 
 ## Components
 
@@ -103,28 +116,28 @@ The main provider. Manages theme state, API calls, caching, and CSS variable app
 | `autoApply`     | `boolean`                                | `true`    | Apply CSS variables to `:root`.                      |
 | `onThemeChange` | `(theme: GenerateThemeResponse) => void` | -         | Called when theme data changes.                      |
 | `onModeChange`  | `(mode: ThemeMode) => void`              | -         | Called when mode changes.                            |
-| `onError`       | `(error: Error) => void`                 | -         | Called on API errors.                                |
-| `fallback`      | `React.ReactNode`                        | -         | Shown while the theme is loading for the first time. |
+| `onError`        | `(error: Error) => void`                 | -         | Called on API errors.                                          |
+| `loadingContent` | `React.ReactNode`                        | -         | Content rendered inside the loading wrapper on first API call. |
 
 > **`themeParams.tailwindVersion`** controls the CSS variable format applied to `:root`. Use `'v3'` for projects that wrap variables with `hsl(var(--token))` (Tailwind v3 / shadcn/ui default), or `'v4'` (default) for projects that use `var(--token)` directly (Tailwind v4 / `@theme inline`).
 
 ### `<DhemeScript>`
 
-Blocking script that prevents FOUC by applying cached theme CSS variables before React hydrates.
+Optional blocking script for zero FOUC on the very first visit. On cached visits, the provider already handles FOUC prevention internally — `DhemeScript` adds protection for first-visit scenarios.
 
 ```tsx
 <DhemeScript
-  defaultMode="light" // Fallback mode (default: 'light')
+  defaultMode="light" // Must match the defaultMode in DhemeProvider
   nonce="abc123" // CSP nonce (optional)
 />
 ```
 
-Place it **before** `<DhemeProvider>` in your component tree, as high as possible.
+Place it in your HTML `<head>` **before** React loads. The `defaultMode` must match the value used in `<DhemeProvider>`.
 
-| Prop          | Type                | Default   | Description               |
-| ------------- | ------------------- | --------- | ------------------------- |
-| `defaultMode` | `'light' \| 'dark'` | `'light'` | Fallback if no cache.     |
-| `nonce`       | `string`            | -         | CSP nonce for the script. |
+| Prop          | Type                | Default   | Description                                                      |
+| ------------- | ------------------- | --------- | ---------------------------------------------------------------- |
+| `defaultMode` | `'light' \| 'dark'` | `'light'` | Fallback mode when no preference is stored. Match `DhemeProvider`. |
+| `nonce`       | `string`            | -         | CSP nonce for the script.                                        |
 
 ## Hooks
 

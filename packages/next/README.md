@@ -34,19 +34,15 @@ pnpm add @dheme/next @dheme/react @dheme/sdk
 
 ```tsx
 // app/layout.tsx (Server Component)
-import { DhemeScript } from '@dheme/next/server'; // Server Component — server path only
-import { DhemeProvider } from '@dheme/next';
+import { DhemeSetup } from '@dheme/next';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <DhemeScript apiKey={process.env.DHEME_API_KEY!} theme="#3b82f6" />
-      </head>
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <DhemeProvider apiKey={process.env.DHEME_API_KEY!} theme="#3b82f6">
+        <DhemeSetup apiKey={process.env.DHEME_API_KEY!} theme="#3b82f6" defaultMode="light">
           {children}
-        </DhemeProvider>
+        </DhemeSetup>
       </body>
     </html>
   );
@@ -54,6 +50,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 
 That's it. Your app has 19 CSS variables applied server-side — zero client-side fetch, zero FOUC.
+
+`DhemeSetup` combines `DhemeScript` + `DhemeProvider` in a single declaration and ensures `defaultMode` is always consistent between them.
 
 ## How It Works
 
@@ -74,25 +72,80 @@ The server maintains an **in-memory LRU cache** (100 entries, 1h TTL). Since the
 
 ## Components
 
-### `<DhemeScript>` (Server Component)
+### `<DhemeSetup>` (Server Component — recommended)
 
-Fetches the theme on the server and renders inline `<style>` + `<script>` tags. Place it in `<head>`.
+Single entry point that combines `DhemeScript` + `DhemeProvider`. Use this when you don't need client-side callbacks (`onThemeChange`, `onModeChange`, etc.).
 
 ```tsx
-<DhemeScript
-  apiKey={process.env.DHEME_API_KEY!} // Required — server-side only
-  theme="#3b82f6" // Required — primary HEX color
-  themeParams={{
-    // Optional generation params
-    radius: 0.75,
-    saturationAdjust: 10,
-    borderIsColored: false,
-    tailwindVersion: 'v4', // 'v3' | 'v4' (default: 'v4')
-  }}
-  defaultMode="light" // 'light' | 'dark' (default: 'light')
-  baseUrl="http://localhost:3005" // Override API URL (optional)
-  nonce="abc123" // CSP nonce (optional)
-/>
+// app/layout.tsx
+import { DhemeSetup } from '@dheme/next';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <DhemeSetup
+          apiKey={process.env.DHEME_API_KEY!}
+          theme="#3b82f6"
+          defaultMode="dark" // Specified once — propagated to both script and provider
+          themeParams={{ radius: 0.75, tailwindVersion: 'v4' }}
+        >
+          {children}
+        </DhemeSetup>
+      </body>
+    </html>
+  );
+}
+```
+
+| Prop              | Type                                              | Default   | Description                                                      |
+| ----------------- | ------------------------------------------------- | --------- | ---------------------------------------------------------------- |
+| `theme`           | `string`                                          | -         | **Required.** Primary HEX color.                                 |
+| `defaultMode`     | `'light' \| 'dark'`                               | `'light'` | Initial color mode. Passed to both script and provider.          |
+| `themeParams`     | `Omit<GenerateThemeRequest, 'theme'>`             | -         | Additional generation parameters.                                |
+| `apiKey`          | `string`                                          | -         | Dheme API key. Server-side only — never sent to the browser.     |
+| `baseUrl`         | `string`                                          | -         | Override API base URL.                                           |
+| `nonce`           | `string`                                          | -         | CSP nonce for injected style/script tags.                        |
+| `onGenerateTheme` | `(params) => Promise<GenerateThemeResponse>`      | -         | Server-side custom theme function. Only used by `DhemeScript`.   |
+| `proxyUrl`        | `string`                                          | `'/api/dheme'` | Client-side proxy route URL.                                |
+| `cookieSync`      | `boolean`                                         | `true`    | Sync mode and params to cookies.                                 |
+| `persist`         | `boolean`                                         | `true`    | Persist theme in localStorage.                                   |
+| `autoApply`       | `boolean`                                         | `true`    | Apply CSS variables automatically.                               |
+| `children`        | `React.ReactNode`                                 | -         | **Required.** App content.                                       |
+
+> For apps that need `onThemeChange`, `onModeChange`, `onError`, or `loadingContent`, use `DhemeScript` + `DhemeProvider` separately (see below).
+
+---
+
+### `<DhemeScript>` (Server Component)
+
+Fetches the theme on the server and renders inline `<style>` + `<script>` tags. Used directly when you need to place the styles in `<head>` or when combining with a custom `DhemeProvider`.
+
+```tsx
+import { DhemeScript, DhemeProvider } from '@dheme/next';
+
+// app/layout.tsx
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <DhemeScript
+          apiKey={process.env.DHEME_API_KEY!}
+          theme="#3b82f6"
+          defaultMode="dark"
+          themeParams={{ radius: 0.75, tailwindVersion: 'v4' }}
+          nonce="abc123"
+        />
+      </head>
+      <body>
+        <DhemeProvider theme="#3b82f6" defaultMode="dark">
+          {children}
+        </DhemeProvider>
+      </body>
+    </html>
+  );
+}
+```
 ```
 
 | Prop          | Type                                  | Default   | Description                           |
@@ -127,20 +180,16 @@ A floating FAB for real-time theme generation. Re-exported from `@dheme/react` w
 
 ```tsx
 // app/layout.tsx
-import { DhemeScript } from '@dheme/next/server';
-import { DhemeProvider, ThemeGenerator } from '@dheme/next';
+import { DhemeSetup, ThemeGenerator } from '@dheme/next';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <DhemeScript apiKey={process.env.DHEME_API_KEY!} theme="#3b82f6" />
-      </head>
       <body>
-        <DhemeProvider apiKey={process.env.DHEME_API_KEY!} theme="#3b82f6">
+        <DhemeSetup apiKey={process.env.DHEME_API_KEY!} theme="#3b82f6">
           {children}
           <ThemeGenerator />
-        </DhemeProvider>
+        </DhemeSetup>
       </body>
     </html>
   );
@@ -303,23 +352,20 @@ DHEME_BASE_URL=http://localhost:3005
 ### `app/layout.tsx`
 
 ```tsx
-import { DhemeScript } from '@dheme/next/server';
-import { DhemeProvider } from '@dheme/next';
+import { DhemeSetup } from '@dheme/next';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <DhemeScript
+      <body>
+        <DhemeSetup
           apiKey={process.env.DHEME_API_KEY!}
           theme="#3b82f6"
+          defaultMode="light"
           themeParams={{ radius: 0.5 }}
-        />
-      </head>
-      <body>
-        <DhemeProvider apiKey={process.env.DHEME_API_KEY!} theme="#3b82f6">
+        >
           {children}
-        </DhemeProvider>
+        </DhemeSetup>
       </body>
     </html>
   );
@@ -386,10 +432,14 @@ export async function GET(request: Request) {
                     Server                          Client
                     ──────                          ──────
 
+              DhemeSetup (Server Component)
+              │
+              ├──────────────────────────────────────────────┐
+              │                                              │
 Request →  DhemeScript (Server Component)    DhemeProvider (Client Component)
            │                                  │
            ├─ themeCache.get(key)              ├─ localStorage cache check
-           │  ↓ miss? call SDK                │  ↓ hit? serve instantly
+           │  ↓ miss? call SDK                │  ↓ hit? apply synchronously
            ├─ themeCache.set(key, data)        ├─ background revalidation
            │                                  │
            ├─ <style> with :root + .dark      ├─ cookie sync (mode + params)
@@ -414,13 +464,16 @@ Request →  DhemeScript (Server Component)    DhemeProvider (Client Component)
 
 ## TypeScript
 
-All types are exported:
+All types are exported from `@dheme/next`:
 
 ```typescript
-// Client types
 import type {
+  // Component props
+  DhemeSetupProps,
   DhemeProviderProps,
+  DhemeScriptProps,
   ThemeGeneratorProps,
+  // Theme types
   ThemeMode,
   ThemeDataState,
   ThemeActionsState,
@@ -430,8 +483,8 @@ import type {
   HSLColor,
 } from '@dheme/next';
 
-// Server types
-import type { DhemeScriptProps, GenerateThemeStylesOptions } from '@dheme/next/server';
+// Server utility types
+import type { GenerateThemeStylesOptions } from '@dheme/next/server';
 ```
 
 ## Related Packages
