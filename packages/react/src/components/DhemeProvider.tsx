@@ -5,8 +5,8 @@ function resolveLoadingBg(
   mode: 'light' | 'dark'
 ): string | null {
   if (prop === false) return null;
-  if (prop === true) return mode === 'dark' ? '#000000' : '#ffffff';
-  return mode === 'dark' ? (prop.dark ?? '#000000') : (prop.light ?? '#ffffff');
+  if (prop === true) return mode === 'dark' ? '#0a0a0a' : '#fafafa';
+  return mode === 'dark' ? (prop.dark ?? '#0a0a0a') : (prop.light ?? '#fafafa');
 }
 import { DhemeClient } from '@dheme/sdk';
 import type { GenerateThemeRequest, GenerateThemeResponse } from '@dheme/sdk';
@@ -59,7 +59,11 @@ export function DhemeProvider({
   });
   const [mode, setModeState] = useState<ThemeMode>(() => {
     if (typeof window === 'undefined') return defaultMode;
-    return loadMode() || defaultMode;
+    return (
+      loadMode() ??
+      (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : null) ??
+      defaultMode
+    );
   });
   // If CSS vars are already present (DhemeScript SSR or client blocking script),
   // initialize as ready to skip the loading screen entirely.
@@ -70,7 +74,10 @@ export function DhemeProvider({
     // waitForFresh: always start with loading to guarantee fresh API response before rendering.
     // Still applies the fallback background so there's no unstyled flash behind the overlay.
     if (waitForFresh) {
-      const resolvedMode: ThemeMode = loadMode() ?? defaultMode;
+      const resolvedMode: ThemeMode =
+        loadMode() ??
+        (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : null) ??
+        defaultMode;
       if (loadingBackground !== false) {
         const bg = resolveLoadingBg(loadingBackground, resolvedMode);
         if (bg) document.documentElement.style.backgroundColor = bg;
@@ -83,7 +90,10 @@ export function DhemeProvider({
     if (getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() !== '')
       return true;
     // Resolve mode synchronously (mirrors the mode useState initializer below).
-    const resolvedMode: ThemeMode = loadMode() ?? defaultMode;
+    const resolvedMode: ThemeMode =
+      loadMode() ??
+      (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : null) ??
+      defaultMode;
     // Helper: apply fallback background and return false.
     const applyBgAndReturnFalse = (): false => {
       if (loadingBackground !== false) {
