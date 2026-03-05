@@ -41,6 +41,7 @@ export async function DhemeSetup({
   cookieSync,
   persist,
   autoApply,
+  loadingBackground,
   children,
 }: DhemeSetupProps): Promise<React.ReactElement> {
   return React.createElement(
@@ -57,6 +58,7 @@ export async function DhemeSetup({
       cookieSync,
       persist,
       autoApply,
+      loadingBackground,
       children,
     })
   );

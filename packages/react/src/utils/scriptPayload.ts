@@ -5,5 +5,5 @@ export function getBlockingScriptPayload(defaultMode: ThemeMode): string {
 }
 
 export function getNextBlockingScriptPayload(defaultMode: ThemeMode): string {
-  return `(function(){try{var m=document.cookie.match(/dheme-mode=(\\w+)/);var mode=m?m[1]:null;if(!mode){mode=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'${defaultMode}'}if(mode==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}})()`;
+  return `(function(){try{var m=document.cookie.match(/dheme-mode=(\\w+)/);var mode=m?m[1]:null;if(!mode){mode=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'${defaultMode}'}document.documentElement.style.backgroundColor=mode==='dark'?'#000000':'#ffffff';if(mode==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}})()`;
 }

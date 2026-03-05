@@ -84,6 +84,12 @@ export interface DhemeSetupProps {
   persist?: boolean;
   /** Automatically apply CSS variables when theme changes. @default true */
   autoApply?: boolean;
+  /**
+   * Aplica um `backgroundColor` de fallback no `<html>` antes do tema carregar,
+   * prevenindo o Flash of Unstyled Background (FOUB). Forwarded para o DhemeProvider interno.
+   * @default true
+   */
+  loadingBackground?: boolean | { light?: string; dark?: string };
   children: React.ReactNode;
 }
 

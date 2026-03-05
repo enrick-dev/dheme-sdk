@@ -105,19 +105,20 @@ The main provider. Manages theme state, API calls, caching, and CSS variable app
 </DhemeProvider>
 ```
 
-| Prop            | Type                                     | Default   | Description                                          |
-| --------------- | ---------------------------------------- | --------- | ---------------------------------------------------- |
-| `apiKey`        | `string`                                 | -         | **Required.** Your Dheme API key.                    |
-| `theme`         | `string`                                 | -         | Primary HEX color. Auto-generates on mount.          |
-| `themeParams`   | `Omit<GenerateThemeRequest, 'theme'>`    | -         | Additional generation parameters.                    |
-| `defaultMode`   | `'light' \| 'dark'`                      | `'light'` | Initial color mode.                                  |
-| `baseUrl`       | `string`                                 | -         | Override API base URL.                               |
-| `persist`       | `boolean`                                | `true`    | Cache theme in localStorage.                         |
-| `autoApply`     | `boolean`                                | `true`    | Apply CSS variables to `:root`.                      |
-| `onThemeChange` | `(theme: GenerateThemeResponse) => void` | -         | Called when theme data changes.                      |
-| `onModeChange`  | `(mode: ThemeMode) => void`              | -         | Called when mode changes.                            |
-| `onError`        | `(error: Error) => void`                 | -         | Called on API errors.                                          |
-| `loadingContent` | `React.ReactNode`                        | -         | Content rendered inside the loading wrapper on first API call. |
+| Prop                | Type                                        | Default   | Description                                                                    |
+| ------------------- | ------------------------------------------- | --------- | ------------------------------------------------------------------------------ |
+| `apiKey`            | `string`                                    | -         | **Required.** Your Dheme API key.                                              |
+| `theme`             | `string`                                    | -         | Primary HEX color. Auto-generates on mount.                                    |
+| `themeParams`       | `Omit<GenerateThemeRequest, 'theme'>`       | -         | Additional generation parameters.                                              |
+| `defaultMode`       | `'light' \| 'dark'`                         | `'light'` | Initial color mode.                                                            |
+| `baseUrl`           | `string`                                    | -         | Override API base URL.                                                         |
+| `persist`           | `boolean`                                   | `true`    | Cache theme in localStorage.                                                   |
+| `autoApply`         | `boolean`                                   | `true`    | Apply CSS variables to `:root`.                                                |
+| `onThemeChange`     | `(theme: GenerateThemeResponse) => void`    | -         | Called when theme data changes.                                                |
+| `onModeChange`      | `(mode: ThemeMode) => void`                 | -         | Called when mode changes.                                                      |
+| `onError`           | `(error: Error) => void`                    | -         | Called on API errors.                                                          |
+| `loadingContent`    | `React.ReactNode`                           | -         | Content rendered inside the loading wrapper on first API call.                 |
+| `loadingBackground` | `boolean \| { light?: string; dark?: string }` | `true` | Background color applied to `<html>` before the theme loads. Prevents a white flash while the API call completes. `true` = `#ffffff` / `#000000`, `false` = disabled, or pass custom hex values per mode. |
 
 > **`themeParams.tailwindVersion`** controls the CSS variable format applied to `:root`. Use `'v3'` for projects that wrap variables with `hsl(var(--token))` (Tailwind v3 / shadcn/ui default), or `'v4'` (default) for projects that use `var(--token)` directly (Tailwind v4 / `@theme inline`).
 

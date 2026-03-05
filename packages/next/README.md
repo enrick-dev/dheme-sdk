@@ -59,9 +59,12 @@ That's it. Your app has 19 CSS variables applied server-side — zero client-sid
 
 1. `<DhemeScript>` is a **Server Component** — it calls the Dheme API on the server
 2. It inlines a `<style>` tag with CSS variables for **both** light and dark modes
-3. It inlines a tiny `<script>` (~250 bytes) that detects the user's mode preference (cookie or `prefers-color-scheme`) and applies the `.dark` class
-4. The browser receives HTML with styles already applied — **before any paint**
-5. React hydrates, `DhemeProvider` sets `isReady = true` — no API call needed
+3. It inlines a tiny `<script>` (~300 bytes) that:
+   - Detects the user's mode preference (cookie or `prefers-color-scheme`)
+   - Sets `document.documentElement.style.backgroundColor` immediately (white for light, black for dark) — **before any paint** — to prevent the light→dark background flash
+   - Applies the `.dark` class
+4. The browser receives HTML with styles and background already applied — **before any paint**
+5. React hydrates, `DhemeProvider` sets `isReady = true` and removes the temporary inline `backgroundColor` — **no API call needed**
 
 ### Server-side caching
 
@@ -98,20 +101,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-| Prop              | Type                                              | Default   | Description                                                      |
-| ----------------- | ------------------------------------------------- | --------- | ---------------------------------------------------------------- |
-| `theme`           | `string`                                          | -         | **Required.** Primary HEX color.                                 |
-| `defaultMode`     | `'light' \| 'dark'`                               | `'light'` | Initial color mode. Passed to both script and provider.          |
-| `themeParams`     | `Omit<GenerateThemeRequest, 'theme'>`             | -         | Additional generation parameters.                                |
-| `apiKey`          | `string`                                          | -         | Dheme API key. Server-side only — never sent to the browser.     |
-| `baseUrl`         | `string`                                          | -         | Override API base URL.                                           |
-| `nonce`           | `string`                                          | -         | CSP nonce for injected style/script tags.                        |
-| `onGenerateTheme` | `(params) => Promise<GenerateThemeResponse>`      | -         | Server-side custom theme function. Only used by `DhemeScript`.   |
-| `proxyUrl`        | `string`                                          | `'/api/dheme'` | Client-side proxy route URL.                                |
-| `cookieSync`      | `boolean`                                         | `true`    | Sync mode and params to cookies.                                 |
-| `persist`         | `boolean`                                         | `true`    | Persist theme in localStorage.                                   |
-| `autoApply`       | `boolean`                                         | `true`    | Apply CSS variables automatically.                               |
-| `children`        | `React.ReactNode`                                 | -         | **Required.** App content.                                       |
+| Prop                | Type                                              | Default        | Description                                                                    |
+| ------------------- | ------------------------------------------------- | -------------- | ------------------------------------------------------------------------------ |
+| `theme`             | `string`                                          | -              | **Required.** Primary HEX color.                                               |
+| `defaultMode`       | `'light' \| 'dark'`                               | `'light'`      | Initial color mode. Passed to both script and provider.                        |
+| `themeParams`       | `Omit<GenerateThemeRequest, 'theme'>`             | -              | Additional generation parameters.                                              |
+| `apiKey`            | `string`                                          | -              | Dheme API key. Server-side only — never sent to the browser.                   |
+| `baseUrl`           | `string`                                          | -              | Override API base URL.                                                         |
+| `nonce`             | `string`                                          | -              | CSP nonce for injected style/script tags.                                      |
+| `onGenerateTheme`   | `(params) => Promise<GenerateThemeResponse>`      | -              | Server-side custom theme function. Only used by `DhemeScript`.                 |
+| `proxyUrl`          | `string`                                          | `'/api/dheme'` | Client-side proxy route URL.                                                   |
+| `cookieSync`        | `boolean`                                         | `true`         | Sync mode and params to cookies.                                               |
+| `persist`           | `boolean`                                         | `true`         | Persist theme in localStorage.                                                 |
+| `autoApply`         | `boolean`                                         | `true`         | Apply CSS variables automatically.                                             |
+| `loadingBackground` | `boolean \| { light?: string; dark?: string }`    | `true`         | Background color applied to `<html>` while the theme loads. Prevents the light→dark flash when `DhemeScript` applies the dark class after paint. `true` = `#ffffff` / `#000000`, `false` = disabled, or pass custom hex values per mode. |
+| `children`          | `React.ReactNode`                                 | -              | **Required.** App content.                                                     |
 
 > For apps that need `onThemeChange`, `onModeChange`, `onError`, or `loadingContent`, use `DhemeScript` + `DhemeProvider` separately (see below).
 

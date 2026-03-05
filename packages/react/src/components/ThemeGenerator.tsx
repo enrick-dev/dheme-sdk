@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { GenerateThemeRequest } from '@dheme/sdk';
 import { useThemeActions } from '../hooks/useThemeActions';
 import { useDebounce } from '../hooks/useDebounce';
@@ -105,6 +105,33 @@ function RotateCcwIcon({ className }: { className?: string }) {
       <path d="M3 3v5h5" />
     </svg>
   );
+}
+
+// ─── CSS variable helper (v3 / v4 multi-compat) ───────────────────────────────
+
+/**
+ * A function that formats a CSS custom property reference for use in inline styles.
+ * - v3 (bare HSL vars): returns `hsl(var(--token))` or `hsl(var(--token) / opacity)`
+ * - v4 (full hsl() vars): returns `var(--token)` or `color-mix(in srgb, var(--token) N%, transparent)`
+ */
+type CvFn = (token: string, opacity?: number) => string;
+
+/**
+ * Internal context that provides the correct CSS var accessor based on the
+ * Tailwind version detected at mount time. Default matches v3 behavior.
+ */
+const ThemeCssCtx = React.createContext<CvFn>((t, o) =>
+  o != null ? `hsl(var(--${t}) / ${o})` : `hsl(var(--${t}))`
+);
+
+function makeCv(isV4: boolean): CvFn {
+  if (isV4) {
+    return (t, o) =>
+      o != null
+        ? `color-mix(in srgb, var(--${t}) ${Math.round(o * 100)}%, transparent)`
+        : `var(--${t})`;
+  }
+  return (t, o) => (o != null ? `hsl(var(--${t}) / ${o})` : `hsl(var(--${t}))`);
 }
 
 // ─── Minimal HexColorPicker ────────────────────────────────────────────────────
@@ -328,6 +355,7 @@ function HexColorPicker({ color, onChange }: HexColorPickerProps) {
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
+  const cv = React.useContext(ThemeCssCtx);
   return (
     <div
       style={{
@@ -335,7 +363,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
         fontWeight: 700,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
-        color: 'hsl(var(--muted-foreground))',
+        color: cv('muted-foreground'),
         marginBottom: '10px',
       }}
     >
@@ -363,6 +391,7 @@ function ColorRow({
   onInputChange,
   actionButton,
 }: ColorRowProps) {
+  const cv = React.useContext(ThemeCssCtx);
   const [pickerOpen, setPickerOpen] = useState(false);
   const hex = color.replace('#', '').toUpperCase();
 
@@ -377,7 +406,7 @@ function ColorRow({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '12px', fontWeight: 500, color: 'hsl(var(--foreground))' }}>
+          <span style={{ fontSize: '12px', fontWeight: 500, color: cv('foreground') }}>
             {label}
           </span>
           {badge && (
@@ -388,8 +417,8 @@ function ColorRow({
                 letterSpacing: '0.05em',
                 padding: '1px 5px',
                 borderRadius: '99px',
-                background: 'hsl(var(--muted))',
-                color: 'hsl(var(--muted-foreground))',
+                background: cv('muted'),
+                color: cv('muted-foreground'),
               }}
             >
               {badge}
@@ -407,8 +436,8 @@ function ColorRow({
             width: '32px',
             height: '32px',
             borderRadius: '6px',
-            border: '1px solid hsl(var(--border))',
-            background: disabled ? 'hsl(var(--muted))' : color,
+            border: `1px solid ${cv('border')}`,
+            background: disabled ? cv('muted') : color,
             cursor: disabled ? 'not-allowed' : 'pointer',
             flexShrink: 0,
             opacity: disabled ? 0.4 : 1,
@@ -421,10 +450,10 @@ function ColorRow({
           style={{
             display: 'flex',
             alignItems: 'center',
-            border: '1px solid hsl(var(--border))',
+            border: `1px solid ${cv('border')}`,
             borderRadius: '6px',
             overflow: 'hidden',
-            background: disabled ? 'hsl(var(--muted))' : 'hsl(var(--background))',
+            background: disabled ? cv('muted') : cv('background'),
             flex: 1,
             opacity: disabled ? 0.5 : 1,
           }}
@@ -433,7 +462,7 @@ function ColorRow({
             style={{
               padding: '0 8px',
               fontSize: '12px',
-              color: 'hsl(var(--muted-foreground))',
+              color: cv('muted-foreground'),
               fontFamily: 'monospace',
             }}
           >
@@ -455,7 +484,7 @@ function ColorRow({
               fontSize: '12px',
               fontFamily: 'monospace',
               fontWeight: 500,
-              color: 'hsl(var(--foreground))',
+              color: cv('foreground'),
               width: '100%',
               padding: '7px 8px 7px 0',
               cursor: disabled ? 'not-allowed' : 'text',
@@ -470,8 +499,8 @@ function ColorRow({
           style={{
             marginTop: '8px',
             padding: '10px',
-            background: 'hsl(var(--card))',
-            border: '1px solid hsl(var(--border))',
+            background: cv('card'),
+            border: `1px solid ${cv('border')}`,
             borderRadius: '8px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
           }}
@@ -494,13 +523,12 @@ interface SliderRowProps {
 }
 
 function SliderRow({ label, value, onChange, min, max, step, display }: SliderRowProps) {
+  const cv = React.useContext(ThemeCssCtx);
   const pct = ((value[0] - min) / (max - min)) * 100;
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-      <span style={{ fontSize: '12px', color: 'hsl(var(--foreground))', minWidth: '70px' }}>
-        {label}
-      </span>
+      <span style={{ fontSize: '12px', color: cv('foreground'), minWidth: '70px' }}>{label}</span>
       <input
         type="range"
         min={min}
@@ -508,12 +536,13 @@ function SliderRow({ label, value, onChange, min, max, step, display }: SliderRo
         step={step}
         value={value[0]}
         onChange={(e) => onChange([Number(e.target.value)])}
+        className="dheme-slider"
         style={{
           flex: 1,
           height: '4px',
           appearance: 'none',
           WebkitAppearance: 'none',
-          background: `linear-gradient(to right, hsl(var(--primary)) ${pct}%, hsl(var(--muted)) ${pct}%)`,
+          background: `linear-gradient(to right, ${cv('primary')} ${pct}%, ${cv('muted')} ${pct}%)`,
           borderRadius: '2px',
           cursor: 'pointer',
           outline: 'none',
@@ -524,7 +553,7 @@ function SliderRow({ label, value, onChange, min, max, step, display }: SliderRo
           fontSize: '11px',
           fontFamily: 'monospace',
           fontWeight: 500,
-          color: 'hsl(var(--muted-foreground))',
+          color: cv('muted-foreground'),
           minWidth: '48px',
           textAlign: 'right',
         }}
@@ -542,6 +571,7 @@ interface ToggleRowProps {
 }
 
 function ToggleRow({ label, checked, onChange }: ToggleRowProps) {
+  const cv = React.useContext(ThemeCssCtx);
   return (
     <div
       style={{
@@ -551,7 +581,7 @@ function ToggleRow({ label, checked, onChange }: ToggleRowProps) {
         marginBottom: '8px',
       }}
     >
-      <span style={{ fontSize: '12px', color: 'hsl(var(--foreground))' }}>{label}</span>
+      <span style={{ fontSize: '12px', color: cv('foreground') }}>{label}</span>
       <button
         role="switch"
         aria-checked={checked}
@@ -560,7 +590,7 @@ function ToggleRow({ label, checked, onChange }: ToggleRowProps) {
           width: '36px',
           height: '20px',
           borderRadius: '10px',
-          background: checked ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
+          background: checked ? cv('primary') : cv('muted'),
           border: 'none',
           cursor: 'pointer',
           position: 'relative',
@@ -643,6 +673,19 @@ export function ThemeGenerator({
   className,
 }: ThemeGeneratorProps): React.ReactElement {
   const { generateTheme } = useThemeActions();
+
+  // ── Detect CSS var format once (v3: bare HSL, v4: full hsl()) ─────────────
+  // v3: --card = "0 0% 100%"  → hsl(var(--card)) works
+  // v4: --card = "hsl(0 0% 100%)" → var(--card) works; hsl(var(--card)) breaks
+  const [isV4] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue('--card')
+      .trim()
+      .startsWith('hsl(');
+  });
+
+  const cv = useMemo(() => makeCv(isV4), [isV4]);
 
   const labels = {
     title: 'Theme Generator',
@@ -761,6 +804,37 @@ export function ThemeGenerator({
     isMountedRef.current = true;
   }, []);
 
+  // ── Slider thumb styles (injected once, format-aware) ─────────────────────
+  useEffect(() => {
+    const styleId = 'dheme-slider-styles';
+    if (typeof document === 'undefined' || document.getElementById(styleId)) return;
+    const thumbBg = isV4
+      ? 'var(--primary, hsl(221.2 83.2% 53.3%))'
+      : 'hsl(var(--primary, 221.2 83.2% 53.3%))';
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      input[type=range].dheme-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: ${thumbBg};
+        border: 2px solid white;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+        cursor: pointer;
+      }
+      input[type=range].dheme-slider::-moz-range-thumb {
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: ${thumbBg};
+        border: 2px solid white;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+        cursor: pointer;
+      }
+    `;
+    document.head.appendChild(style);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleEnableSecondary = () => {
     setIsSecondaryEnabled(true);
@@ -814,357 +888,336 @@ export function ThemeGenerator({
   const panelPosition: React.CSSProperties =
     position === 'bottom-left' ? { bottom: 0, left: 0 } : { bottom: 0, right: 0 };
 
-  // ── Slider thumb styles (injected once) ───────────────────────────────────
-  const styleId = 'dheme-slider-styles';
-  if (typeof document !== 'undefined' && !document.getElementById(styleId)) {
-    const style = document.createElement('style');
-    style.id = styleId;
-    style.textContent = `
-      input[type=range].dheme-slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 14px; height: 14px;
-        border-radius: 50%;
-        background: hsl(var(--primary, 221.2 83.2% 53.3%));
-        border: 2px solid white;
-        box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
-        cursor: pointer;
-      }
-      input[type=range].dheme-slider::-moz-range-thumb {
-        width: 14px; height: 14px;
-        border-radius: 50%;
-        background: hsl(var(--primary, 221.2 83.2% 53.3%));
-        border: 2px solid white;
-        box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
-        cursor: pointer;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
   return (
-    <>
-      {/* Fixed container */}
-      <div
-        className={cn(className)}
-        style={{
-          position: 'fixed',
-          zIndex: 50,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          ...positionStyle,
-        }}
-      >
-        {/* ── Expanded panel ─────────────────────────────────────────────── */}
+    <ThemeCssCtx.Provider value={cv}>
+      <>
+        {/* Fixed container */}
         <div
+          className={cn(className)}
           style={{
-            position: 'absolute',
-            ...panelPosition,
-            width: isOpen ? '340px' : '180px',
-            height: isOpen ? 'auto' : '56px',
-            opacity: isOpen ? 1 : 0,
-            transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.9) translateY(32px)',
-            pointerEvents: isOpen ? 'auto' : 'none',
-            transformOrigin: panelOrigin,
-            transition: 'all 500ms cubic-bezier(0.32, 0.72, 0, 1)',
-            borderRadius: '12px',
-            border: '1px solid hsl(var(--border))',
-            background: 'hsl(var(--card))',
-            boxShadow: '0 25px 50px rgba(0,0,0,0.15)',
-            overflow: 'hidden',
+            position: 'fixed',
+            zIndex: 50,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            ...positionStyle,
           }}
         >
-          {/* Header */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '14px 16px',
-              borderBottom: '1px solid hsl(var(--border))',
-              background: 'hsl(var(--muted) / 0.3)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <SparklesIcon className="dheme-sparkles" />
-              <span style={{ fontSize: '13px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>
-                {labels.title}
-              </span>
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '2px',
-                color: 'hsl(var(--muted-foreground))',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '4px',
-              }}
-            >
-              <XIcon />
-            </button>
-          </div>
-
-          {/* Body */}
-          <div
-            style={{
-              maxHeight: 'calc(100vh - 200px)',
-              overflowY: 'auto',
-              background: 'hsl(var(--background))',
-            }}
-          >
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <p
-                style={{
-                  fontSize: '11px',
-                  color: 'hsl(var(--muted-foreground))',
-                  margin: 0,
-                  lineHeight: 1.5,
-                }}
-              >
-                {labels.description}
-              </p>
-
-              {/* Section 1: Base Colors */}
-              <section>
-                <SectionHeading>{labels.baseColors}</SectionHeading>
-                <ColorRow
-                  label={labels.primary}
-                  color={localPrimary}
-                  onColorChange={setLocalPrimary}
-                  onInputChange={(v) => {
-                    if (v.length === 6) setLocalPrimary(`#${v}`);
-                  }}
-                />
-                <ColorRow
-                  label={labels.secondary}
-                  badge={labels.optional}
-                  color={localSecondary}
-                  disabled={!isSecondaryEnabled}
-                  onColorChange={(c) => {
-                    if (isSecondaryEnabled) setLocalSecondary(c);
-                  }}
-                  onInputChange={(v) => {
-                    if (isSecondaryEnabled && v.length === 6) setLocalSecondary(`#${v}`);
-                  }}
-                  actionButton={
-                    <button
-                      onClick={isSecondaryEnabled ? handleDisableSecondary : handleEnableSecondary}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: '2px',
-                        color: 'hsl(var(--muted-foreground))',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '4px',
-                      }}
-                    >
-                      {isSecondaryEnabled ? <XIcon /> : <PlusIcon />}
-                    </button>
-                  }
-                />
-              </section>
-
-              {/* Section 2: Fine Tuning */}
-              <section>
-                <SectionHeading>{labels.fineTuning}</SectionHeading>
-                <SliderRow
-                  label={labels.saturation}
-                  value={localSaturation}
-                  onChange={setLocalSaturation}
-                  min={-100}
-                  max={100}
-                  step={1}
-                  display={(v) => `${v > 0 ? '+' : ''}${v}%`}
-                />
-                <SliderRow
-                  label={labels.lightness}
-                  value={localLightness}
-                  onChange={setLocalLightness}
-                  min={-100}
-                  max={100}
-                  step={1}
-                  display={(v) => `${v > 0 ? '+' : ''}${v}%`}
-                />
-                <SliderRow
-                  label={labels.borderRadius}
-                  value={localRadius}
-                  onChange={setLocalRadius}
-                  min={0}
-                  max={2}
-                  step={0.1}
-                  display={(v) => `${v.toFixed(1)}rem`}
-                />
-              </section>
-
-              {/* Section 3: Advanced Options */}
-              <section>
-                <SectionHeading>{labels.advancedOptions}</SectionHeading>
-                <ToggleRow
-                  label={labels.colorfulCard}
-                  checked={localCardIsColored}
-                  onChange={(v) => handleToggle('cardIsColored', v)}
-                />
-                <ToggleRow
-                  label={labels.colorfulBackground}
-                  checked={localBackgroundIsColored}
-                  onChange={(v) => handleToggle('backgroundIsColored', v)}
-                />
-                <ToggleRow
-                  label={labels.colorfulBorder}
-                  checked={localBorderIsColored}
-                  onChange={(v) => handleToggle('borderIsColored', v)}
-                />
-              </section>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div
-            style={{
-              padding: '10px 12px',
-              borderTop: '1px solid hsl(var(--border))',
-              background: 'hsl(var(--muted) / 0.2)',
-            }}
-          >
-            <button
-              onClick={handleReset}
-              style={{
-                width: '100%',
-                height: '32px',
-                background: 'none',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                fontSize: '12px',
-                color: 'hsl(var(--muted-foreground))',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'hsl(var(--muted))';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'none';
-              }}
-            >
-              <RotateCcwIcon />
-              {labels.reset}
-            </button>
-          </div>
-        </div>
-
-        {/* ── FAB (pill) ──────────────────────────────────────────────────── */}
-        <div
-          onClick={() => setIsOpen(true)}
-          style={{
-            width: isOpen ? '56px' : '180px',
-            height: '56px',
-            borderRadius: '99px',
-            border: '1px solid hsl(var(--border))',
-            background: 'hsl(var(--card))',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            cursor: isOpen ? 'default' : 'pointer',
-            position: 'relative',
-            overflow: 'hidden',
-            opacity: isOpen ? 0 : 1,
-            transform: isOpen ? 'scale(0.5) translateY(16px)' : 'scale(1) translateY(0)',
-            pointerEvents: isOpen ? 'none' : 'auto',
-            transition: 'all 500ms cubic-bezier(0.32, 0.72, 0, 1)',
-          }}
-        >
+          {/* ── Expanded panel ─────────────────────────────────────────────── */}
           <div
             style={{
               position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0 8px 0 12px',
+              ...panelPosition,
+              width: isOpen ? '340px' : '180px',
+              height: isOpen ? 'auto' : '56px',
+              opacity: isOpen ? 1 : 0,
+              transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.9) translateY(32px)',
+              pointerEvents: isOpen ? 'auto' : 'none',
+              transformOrigin: panelOrigin,
+              transition: 'all 500ms cubic-bezier(0.32, 0.72, 0, 1)',
+              borderRadius: '12px',
+              border: `1px solid ${cv('border')}`,
+              background: cv('card'),
+              boxShadow: '0 25px 50px rgba(0,0,0,0.15)',
+              overflow: 'hidden',
             }}
           >
-            {/* Primary color dot */}
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: localPrimary,
-                border: '1px solid hsl(var(--border))',
-                boxShadow: '0 0 0 2px hsl(var(--background))',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* Label + stats */}
+            {/* Header */}
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '2px',
-                flex: 1,
-                padding: '0 8px',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 16px',
+                borderBottom: `1px solid ${cv('border')}`,
+                background: cv('muted', 0.3),
               }}
             >
-              <span
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <SparklesIcon className="dheme-sparkles" />
+                <span style={{ fontSize: '13px', fontWeight: 600, color: cv('foreground') }}>
+                  {labels.title}
+                </span>
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
                 style={{
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: 'hsl(var(--foreground))',
-                }}
-              >
-                {labels.fabPrimaryLabel}
-              </span>
-              <div
-                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '2px',
+                  color: cv('muted-foreground'),
                   display: 'flex',
-                  gap: '8px',
-                  fontSize: '10px',
-                  fontFamily: 'monospace',
-                  color: 'hsl(var(--muted-foreground))',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
                 }}
               >
-                <span>
-                  S:{localSaturation[0] > 0 ? '+' : ''}
-                  {localSaturation[0]}%
-                </span>
-                <span>
-                  L:{localLightness[0] > 0 ? '+' : ''}
-                  {localLightness[0]}%
-                </span>
+                <XIcon />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div
+              style={{
+                maxHeight: 'calc(100vh - 200px)',
+                overflowY: 'auto',
+                background: cv('background'),
+              }}
+            >
+              <div
+                style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '24px' }}
+              >
+                <p
+                  style={{
+                    fontSize: '11px',
+                    color: cv('muted-foreground'),
+                    margin: 0,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {labels.description}
+                </p>
+
+                {/* Section 1: Base Colors */}
+                <section>
+                  <SectionHeading>{labels.baseColors}</SectionHeading>
+                  <ColorRow
+                    label={labels.primary}
+                    color={localPrimary}
+                    onColorChange={setLocalPrimary}
+                    onInputChange={(v) => {
+                      if (v.length === 6) setLocalPrimary(`#${v}`);
+                    }}
+                  />
+                  <ColorRow
+                    label={labels.secondary}
+                    badge={labels.optional}
+                    color={localSecondary}
+                    disabled={!isSecondaryEnabled}
+                    onColorChange={(c) => {
+                      if (isSecondaryEnabled) setLocalSecondary(c);
+                    }}
+                    onInputChange={(v) => {
+                      if (isSecondaryEnabled && v.length === 6) setLocalSecondary(`#${v}`);
+                    }}
+                    actionButton={
+                      <button
+                        onClick={
+                          isSecondaryEnabled ? handleDisableSecondary : handleEnableSecondary
+                        }
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '2px',
+                          color: cv('muted-foreground'),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        {isSecondaryEnabled ? <XIcon /> : <PlusIcon />}
+                      </button>
+                    }
+                  />
+                </section>
+
+                {/* Section 2: Fine Tuning */}
+                <section>
+                  <SectionHeading>{labels.fineTuning}</SectionHeading>
+                  <SliderRow
+                    label={labels.saturation}
+                    value={localSaturation}
+                    onChange={setLocalSaturation}
+                    min={-100}
+                    max={100}
+                    step={1}
+                    display={(v) => `${v > 0 ? '+' : ''}${v}%`}
+                  />
+                  <SliderRow
+                    label={labels.lightness}
+                    value={localLightness}
+                    onChange={setLocalLightness}
+                    min={-100}
+                    max={100}
+                    step={1}
+                    display={(v) => `${v > 0 ? '+' : ''}${v}%`}
+                  />
+                  <SliderRow
+                    label={labels.borderRadius}
+                    value={localRadius}
+                    onChange={setLocalRadius}
+                    min={0}
+                    max={2}
+                    step={0.1}
+                    display={(v) => `${v.toFixed(1)}rem`}
+                  />
+                </section>
+
+                {/* Section 3: Advanced Options */}
+                <section>
+                  <SectionHeading>{labels.advancedOptions}</SectionHeading>
+                  <ToggleRow
+                    label={labels.colorfulCard}
+                    checked={localCardIsColored}
+                    onChange={(v) => handleToggle('cardIsColored', v)}
+                  />
+                  <ToggleRow
+                    label={labels.colorfulBackground}
+                    checked={localBackgroundIsColored}
+                    onChange={(v) => handleToggle('backgroundIsColored', v)}
+                  />
+                  <ToggleRow
+                    label={labels.colorfulBorder}
+                    checked={localBorderIsColored}
+                    onChange={(v) => handleToggle('borderIsColored', v)}
+                  />
+                </section>
               </div>
             </div>
 
-            {/* Chevron button */}
+            {/* Footer */}
             <div
               style={{
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '50%',
-                background: 'hsl(var(--muted) / 0.5)',
-                flexShrink: 0,
+                padding: '10px 12px',
+                borderTop: `1px solid ${cv('border')}`,
+                background: cv('muted', 0.2),
               }}
             >
-              <ChevronUpIcon />
+              <button
+                onClick={handleReset}
+                style={{
+                  width: '100%',
+                  height: '32px',
+                  background: 'none',
+                  border: `1px solid ${cv('border')}`,
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  fontSize: '12px',
+                  color: cv('muted-foreground'),
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = cv('muted');
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'none';
+                }}
+              >
+                <RotateCcwIcon />
+                {labels.reset}
+              </button>
+            </div>
+          </div>
+
+          {/* ── FAB (pill) ──────────────────────────────────────────────────── */}
+          <div
+            onClick={() => setIsOpen(true)}
+            style={{
+              width: isOpen ? '56px' : '180px',
+              height: '56px',
+              borderRadius: '99px',
+              border: `1px solid ${cv('border')}`,
+              background: cv('card'),
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              cursor: isOpen ? 'default' : 'pointer',
+              position: 'relative',
+              overflow: 'hidden',
+              opacity: isOpen ? 0 : 1,
+              transform: isOpen ? 'scale(0.5) translateY(16px)' : 'scale(1) translateY(0)',
+              pointerEvents: isOpen ? 'none' : 'auto',
+              transition: 'all 500ms cubic-bezier(0.32, 0.72, 0, 1)',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0 8px 0 12px',
+              }}
+            >
+              {/* Primary color dot */}
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: localPrimary,
+                  border: `1px solid ${cv('border')}`,
+                  boxShadow: `0 0 0 2px ${cv('background')}`,
+                  flexShrink: 0,
+                }}
+              />
+
+              {/* Label + stats */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  flex: 1,
+                  padding: '0 8px',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: cv('foreground'),
+                  }}
+                >
+                  {labels.fabPrimaryLabel}
+                </span>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    fontSize: '10px',
+                    fontFamily: 'monospace',
+                    color: cv('muted-foreground'),
+                  }}
+                >
+                  <span>
+                    S:{localSaturation[0] > 0 ? '+' : ''}
+                    {localSaturation[0]}%
+                  </span>
+                  <span>
+                    L:{localLightness[0] > 0 ? '+' : ''}
+                    {localLightness[0]}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Chevron button */}
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  background: cv('muted', 0.5),
+                  flexShrink: 0,
+                }}
+              >
+                <ChevronUpIcon />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </>
+    </ThemeCssCtx.Provider>
   );
 }

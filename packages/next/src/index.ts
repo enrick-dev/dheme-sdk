@@ -14,7 +14,12 @@ export { useTheme, useThemeActions, useGenerateTheme, useDhemeClient } from '@dh
 export { themeToCSS, applyThemeCSSVariables, buildCacheKey } from '@dheme/react';
 
 // Types
-export type { DhemeProviderProps, DhemeScriptProps, DhemeSetupProps, GenerateThemeStylesOptions } from './types';
+export type {
+  DhemeProviderProps,
+  DhemeScriptProps,
+  DhemeSetupProps,
+  GenerateThemeStylesOptions,
+} from './types';
 export type { ThemeMode, ThemeDataState, ThemeActionsState } from '@dheme/react';
 export type {
   GenerateThemeRequest,

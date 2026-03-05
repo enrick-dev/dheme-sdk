@@ -56,6 +56,33 @@ export interface DhemeProviderProps {
    * <DhemeProvider loadingContent={<CompanySpinner />} theme="..." />
    */
   loadingContent?: React.ReactNode;
+  /**
+   * Aplica um `backgroundColor` de fallback no `<html>` antes do tema carregar,
+   * prevenindo o Flash of Unstyled Background (FOUB).
+   *
+   * Também remove o `backgroundColor` inline setado pelo blocking script do
+   * DhemeScript após a hidratação SSR (cobre o flash light → dark no Next.js).
+   *
+   * - `true` (default): `#ffffff` no light mode, `#000000` no dark mode
+   * - `false`: desabilitado
+   * - `{ light?: string; dark?: string }`: cores customizadas por modo
+   *
+   * @default true
+   */
+  loadingBackground?: boolean | { light?: string; dark?: string };
+  /**
+   * Mantém o loading overlay visível até que a API responda com o tema fresco,
+   * mesmo quando há cache ou CSS vars do DhemeScript já disponíveis no DOM.
+   *
+   * Elimina o flicker causado pelo stale-while-revalidate quando o tema da API
+   * difere do que estava em cache ou foi injetado server-side.
+   *
+   * - `true` (default): sempre espera a resposta fresca da API antes de mostrar a página
+   * - `false`: comportamento anterior — mostra imediatamente do cache/DhemeScript e revalida em background
+   *
+   * @default true
+   */
+  waitForFresh?: boolean;
   children: React.ReactNode;
 }
 

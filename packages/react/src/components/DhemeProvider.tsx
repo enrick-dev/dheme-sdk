@@ -1,4 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+
+function resolveLoadingBg(
+  prop: boolean | { light?: string; dark?: string },
+  mode: 'light' | 'dark'
+): string | null {
+  if (prop === false) return null;
+  if (prop === true) return mode === 'dark' ? '#000000' : '#ffffff';
+  return mode === 'dark' ? (prop.dark ?? '#000000') : (prop.light ?? '#ffffff');
+}
 import { DhemeClient } from '@dheme/sdk';
 import type { GenerateThemeRequest, GenerateThemeResponse } from '@dheme/sdk';
 import type { DhemeProviderProps, ThemeMode } from '../types';
@@ -29,6 +38,8 @@ export function DhemeProvider({
   onModeChange,
   onError,
   loadingContent,
+  loadingBackground = true,
+  waitForFresh = true,
   children,
 }: DhemeProviderProps): React.ReactElement {
   const client = useMemo(() => new DhemeClient({ apiKey, baseUrl }), [apiKey, baseUrl]);
@@ -41,7 +52,8 @@ export function DhemeProvider({
     if (typeof window === 'undefined' || !persist || !primaryColor) return null;
     // If blocking script already applied CSS vars, leave theme null here;
     // the useEffect will populate it and kick off background revalidation.
-    if (getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() !== '') return null;
+    if (getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() !== '')
+      return null;
     const params: GenerateThemeRequest = { theme: primaryColor, ...themeParams };
     return loadThemeFromCache(buildCacheKey(params));
   });
@@ -55,21 +67,56 @@ export function DhemeProvider({
   // first paint so children render with the correct theme immediately.
   const [isReady, setIsReady] = useState(() => {
     if (typeof window === 'undefined') return false;
+    // waitForFresh: always start with loading to guarantee fresh API response before rendering.
+    // Still applies the fallback background so there's no unstyled flash behind the overlay.
+    if (waitForFresh) {
+      const resolvedMode: ThemeMode = loadMode() ?? defaultMode;
+      if (loadingBackground !== false) {
+        const bg = resolveLoadingBg(loadingBackground, resolvedMode);
+        if (bg) document.documentElement.style.backgroundColor = bg;
+      }
+      return false;
+    }
     // Case 1: blocking script already applied CSS vars — trust the DOM.
-    if (getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() !== '') return true;
+    // The blocking script (getNextBlockingScriptPayload) already set backgroundColor;
+    // the cleanup useEffect below will remove it after hydration.
+    if (getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() !== '')
+      return true;
+    // Resolve mode synchronously (mirrors the mode useState initializer below).
+    const resolvedMode: ThemeMode = loadMode() ?? defaultMode;
+    // Helper: apply fallback background and return false.
+    const applyBgAndReturnFalse = (): false => {
+      if (loadingBackground !== false) {
+        const bg = resolveLoadingBg(loadingBackground, resolvedMode);
+        if (bg) document.documentElement.style.backgroundColor = bg;
+      }
+      return false;
+    };
     // Case 2: no blocking script, but cache exists — apply synchronously to prevent FOUC.
-    if (!persist || !primaryColor) return false;
+    if (!persist || !primaryColor) return applyBgAndReturnFalse();
     const params: GenerateThemeRequest = { theme: primaryColor, ...themeParams };
     const cached = loadThemeFromCache(buildCacheKey(params));
-    if (!cached) return false;
-    const resolvedMode: ThemeMode = loadMode() ?? defaultMode;
-    if (autoApply) applyThemeCSSVariables(cached, resolvedMode, themeParams?.tailwindVersion ?? 'v4');
+    if (!cached) return applyBgAndReturnFalse();
+    // Cache hit — apply CSS vars synchronously; no fallback background needed.
+    if (autoApply)
+      applyThemeCSSVariables(cached, resolvedMode, themeParams?.tailwindVersion ?? 'v4');
     if (resolvedMode === 'dark') document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
     return true;
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  // Remove the fallback backgroundColor from <html> as soon as the theme is ready.
+  // Covers two cases:
+  // 1. React standalone: set by the useState initializer above when no cache exists.
+  // 2. SSR with DhemeScript: set by getNextBlockingScriptPayload before hydration;
+  //    isReady=true from mount, so this effect fires once on mount to clean up.
+  useEffect(() => {
+    if (isReady && typeof document !== 'undefined') {
+      document.documentElement.style.backgroundColor = '';
+    }
+  }, [isReady]);
 
   // Refs for stable callbacks (avoid stale closures)
   const modeRef = useRef(mode);
@@ -185,7 +232,11 @@ export function DhemeProvider({
 
   // Initial theme load on mount
   useEffect(() => {
-    if (!primaryColor) return;
+    if (!primaryColor) {
+      // Nothing to fetch — release the overlay if waitForFresh was holding it.
+      if (waitForFresh) setIsReady(true);
+      return;
+    }
 
     const params: GenerateThemeRequest = {
       theme: primaryColor,
@@ -194,6 +245,22 @@ export function DhemeProvider({
 
     const cacheKey = buildCacheKey(params);
     const cached = persist ? loadThemeFromCache(cacheKey) : null;
+
+    if (waitForFresh) {
+      // Pre-apply cached CSS vars under the overlay so the reveal is instant and correct.
+      if (cached && !theme) {
+        setTheme(cached);
+        if (autoApply) applyThemeCSSVariables(cached, mode, params.tailwindVersion ?? 'v4');
+      }
+      // Always fetch fresh. generateTheme sets isReady(true) on success.
+      // .finally ensures the overlay is removed even on error.
+      generateTheme(params).finally(() => {
+        setIsReady(true);
+      });
+      return () => {
+        abortRef.current?.abort();
+      };
+    }
 
     if (cached) {
       // Only update state if theme wasn't already pre-loaded in the useState initializer
@@ -250,7 +317,14 @@ export function DhemeProvider({
       ThemeActionsContext.Provider,
       { value: themeActionsValue },
       !isReady
-        ? React.createElement(DhemeLoadingOverlay, null, loadingContent ?? undefined)
+        ? React.createElement(
+            DhemeLoadingOverlay,
+            {
+              background:
+                loadingBackground !== false ? resolveLoadingBg(loadingBackground, mode) : undefined,
+            },
+            loadingContent ?? undefined
+          )
         : children
     )
   );
